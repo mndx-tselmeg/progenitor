@@ -1,0 +1,77 @@
+# Data that was used in this analysis can be found here: https://drive.google.com/drive/folders/167P2pIKX9eJkQuZrpBksDxuHystt6b6r?usp=sharing 
+
+# Preparing the data (in terminal)
+gunzip GSE161690_cell_info.csv.gz
+gunzip GSE161690_count.mtx.gz
+gunzip GSE161690_gene_names.csv.gz
+
+# Creating a matrix with genes as the row name and barcodes as the column names
+setwd("~/personal/project")
+library(Matrix) 
+library(readr)
+counts <- readMM("GSE161690_count.mtx")
+genes <- read_csv("GSE161690_gene_names.csv", col_names = FALSE)
+genes <- genes[-1,]
+genes <- genes[,-c(1), with=FALSE]
+dim(genes)
+barcodes <- read_csv("GSE161690_cell_info.csv", col_names = FALSE)
+barcodes <- barcodes[, -c(1, 3), with = FALSE]
+barcodes <- barcodes[-1,]
+dim(barcodes)
+rownames(counts) <- genes$X2
+colnames(counts) <- barcodes$X2
+
+# Creating a seurat object
+library(Seurat)
+library(dplyr)
+seurat_obj <- CreateSeuratObject(counts = counts,
+                                 min.cells = 3,
+                                 min.features = 200)
+
+# Get the count matrix from the RNA assay
+count_matrix <- GetAssayData(seurat_obj, assay = "RNA", slot = "counts")
+
+# Calculate the total number of entries in the matrix
+total_entries <- nrow(count_matrix) * ncol(count_matrix)
+
+# Calculate the number of zero entries (using the sparse matrix property)
+# The matrix is sparse, so length(@i) is the number of *non-zero* entries.
+non_zero_entries <- length(count_matrix@x) # For dgCMatrix matrices
+# Calculate the number of zero entries
+zero_entries <- total_entries - non_zero_entries
+# Calculate the sparsity rate (percentage of zeros)
+sparsity_rate <- (zero_entries / total_entries) * 100
+# Print the result
+print(paste("The sparsity rate is:", round(sparsity_rate, 2), "%"))
+
+# Get the count matrix (sparse format)
+count_matrix <- GetAssayData(seurat_obj, assay = "RNA", slot = "counts")
+# Calculate average non-zero count per cell
+non_zero_means <- Matrix::colSums(count_matrix) / Matrix::colSums(count_matrix > 0)
+# Calculate overall average non-zero count
+average_non_zero_count <- mean(non_zero_means, na.rm = TRUE)
+print(paste("Average non-zero count per cell:", round(average_non_zero_count, 2)))
+
+# Visualize QC metrics as a violin plot
+VlnPlot(seurat_obj, features = c("nFeature_RNA", "nCount_RNA"), ncol = 2)
+
+# Data is normalized using the log-normalization method
+seurat_obj <- NormalizeData(seurat_obj, 
+                            normalization.method = "LogNormalize", 
+                            scale.factor = 10000)
+
+seurat_obj <- FindVariableFeatures(seurat_obj, selection.method = "vst", nfeatures = 2000)
+seurat_obj <- RunPCA(seurat_obj, features = VariableFeatures(object = seurat_obj))
+VizDimLoadings(seurat_obj, dims = 1:2, reduction = "pca")
+DimPlot(seurat_obj, reduction = "pca") + NoLegend()
+
+#Constructs a KNN graph to model relationships between cells based on their similarity in PCA space. First 10 PCs are used.
+seurat_obj <- FindNeighbors(seurat_obj, dims = 1:10)
+
+# Performs clustering on the KNN graph using the Leiden algorithm.
+seurat_obj <- FindClusters(seurat_obj, resolution = 1)
+
+seurat_obj <- RunUMAP(seurat_obj, dims = 1:10)
+DimPlot(seurat_obj, reduction = "umap")
+DimPlot(seurat_obj, reduction = "pca") + NoLegend()
+
