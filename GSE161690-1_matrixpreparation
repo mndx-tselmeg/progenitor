@@ -1,0 +1,57 @@
+setwd("~/personal/project/GSE161690")
+
+# Load required libraries
+library(Matrix)
+library(Seurat)
+library(readr)
+library(ggplot2)
+
+# Read the count matrix
+counts <- readMM("GSE161690_count.mtx")
+
+# Read gene names 
+gene_names <- read_csv("GSE161690_gene_names.csv", col_names = TRUE)
+genes <- gene_names$x  # Extract gene symbols
+
+# Read cell metadata
+cell_info <- read_csv("GSE161690_cell_info.csv", col_names = TRUE)
+
+# Assign gene names to rows
+rownames(counts) <- genes
+
+# Assign cell IDs to columns (use the 'cellid' column from cell_info)
+colnames(counts) <- cell_info$cellid
+
+# Extract column names from the matrix
+library(Matrix)
+col_names <- colnames(counts)
+
+# Define the prefixes 
+prefixes <- c("E10", "E12", "E14", "E16", "E18")
+
+# Create a list to store the resulting matrices
+matrix_list <- list()
+
+# Loop through each prefix and create subset matrices
+for (prefix in prefixes) {
+  # Find columns that start with this prefix
+  col_indices <- grep(paste0("^", prefix), col_names)
+  
+  # Subset the matrix
+  sub_matrix <- counts[, col_indices]
+  
+  # Convert to dgTMatrix if it's not already
+  if (!is(sub_matrix, "dgTMatrix")) {
+    sub_matrix <- as(sub_matrix, "dgTMatrix")
+  }
+  
+  # Store in the list
+  matrix_list[[prefix]] <- sub_matrix
+}
+
+# Extract individual matrices from the list
+E10_matrix <- matrix_list[["E10"]]
+E12_matrix <- matrix_list[["E12"]]
+E14_matrix <- matrix_list[["E14"]]
+E16_matrix <- matrix_list[["E16"]]
+E18_matrix <- matrix_list[["E18"]]
