@@ -1,0 +1,160 @@
+library(celda)
+library(Seurat)
+matrices_list <- list(
+  E10 = E10_matrix,
+  E12 = E12_matrix,
+  E14 = E14_matrix,
+  E16 = E16_matrix,
+  E18 = E18_matrix
+)
+
+# Create an empty list to store results
+decontx_results <- list()
+
+# Run DecontX on each matrix
+for (sample_name in names(matrices_list)) {
+  cat("Processing", sample_name, "...\n")
+  # Get the matrix for this sample
+  count_matrix <- matrices_list[[sample_name]]
+  # Convert to SingleCellExperiment object
+  sce <- SingleCellExperiment::SingleCellExperiment(
+    assays = list(counts = count_matrix)
+  )
+  # Run DecontX
+  sce_decontx <- decontX(sce)
+  # Store the result
+  decontx_results[[sample_name]] <- sce_decontx
+}
+
+# Set up a 2x3 plotting grid (2 rows, 3 columns)
+par(mfrow = c(2, 3), mar = c(4, 4, 2, 1))  # mar adjusts margin sizes
+
+# Create histograms for each sample
+hist(decontx_results$E10$decontX_contamination, 
+     main = "E10 Contamination Estimates",
+     xlab = "Contamination Fraction",
+     col = "lightblue",
+     xlim = c(0, 1))  # Set consistent x-axis range
+
+hist(decontx_results$E12$decontX_contamination, 
+     main = "E12 Contamination Estimates",
+     xlab = "Contamination Fraction",
+     col = "lightgreen",
+     xlim = c(0, 1))
+
+hist(decontx_results$E14$decontX_contamination, 
+     main = "E14 Contamination Estimates",
+     xlab = "Contamination Fraction",
+     col = "lightcoral",
+     xlim = c(0, 1))
+
+hist(decontx_results$E16$decontX_contamination, 
+     main = "E16 Contamination Estimates",
+     xlab = "Contamination Fraction",
+     col = "lightyellow",
+     xlim = c(0, 1))
+
+hist(decontx_results$E18$decontX_contamination, 
+     main = "E18 Contamination Estimates",
+     xlab = "Contamination Fraction",
+     col = "lightpink",
+     xlim = c(0, 1))
+
+# Add an empty plot in the sixth position for balance
+plot(1, type = "n", axes = FALSE, xlab = "", ylab = "")
+text(1, 1, "Contamination Summary", cex = 1.2, font = 2)
+
+# Reset plotting parameters to default
+par(mfrow = c(1, 1))
+
+# Create an empty list to store the Seurat objects
+seurat_objects <- list()
+
+# Loop through each sample
+for (sample_name in names(decontx_results)) {
+  cat("Processing", sample_name, "...\n")
+  
+  # Extract the decontaminated counts
+  decontaminated_counts <- decontx_results[[sample_name]]@assays@data$decontXcounts
+  
+  # Extract contamination estimates for metadata
+  contamination_estimates <- decontx_results[[sample_name]]$decontX_contamination
+  
+  # Create a Seurat object
+  seurat_obj <- CreateSeuratObject(
+    counts = decontaminated_counts,
+    project = sample_name,
+    min.cells = 3,      # Minimum cells per gene
+    min.features = 200  # Minimum genes per cell
+  )
+  
+  # Add contamination estimates as metadata
+  seurat_obj$contamination <- contamination_estimates[colnames(seurat_obj)]
+  
+  # Add to the list
+  seurat_objects[[sample_name]] <- seurat_obj
+  
+  # Optional: Save individual Seurat objects
+  saveRDS(seurat_obj, file = paste0(sample_name, "_decontaminated_seurat.rds"))
+}
+
+E10_seurat <- seurat_objects$E10
+E12_seurat <- seurat_objects$E12
+E14_seurat <- seurat_objects$E14
+E16_seurat <- seurat_objects$E16
+E18_seurat <- seurat_objects$E18
+
+# List of Seurat object names to process
+seurat_objects <- c("E10_seurat", "E12_seurat", "E14_seurat", "E16_seurat", "E18_seurat")
+
+for (obj_name in seurat_objects) {
+  # Get the Seurat object
+  seurat_obj <- get(obj_name)
+  
+  # Calculate QC metrics
+  rp_genes <- grep("^Rp[sl]", rownames(seurat_obj), value = TRUE, ignore.case = TRUE)
+  seurat_obj[["percent.ribo"]] <- PercentageFeatureSet(seurat_obj, features = rp_genes)
+  
+  mt_genes <- grep("^mt-", rownames(seurat_obj), value = TRUE, ignore.case = TRUE)
+  seurat_obj[["percent.mt"]] <- PercentageFeatureSet(seurat_obj, features = mt_genes)
+  
+  hb_genes <- grep("^Hb[ab]", rownames(seurat_obj), value = TRUE, ignore.case = TRUE)
+  seurat_obj[["percent.hb"]] <- PercentageFeatureSet(seurat_obj, features = hb_genes)
+  
+  # Filter cells based on QC metrics
+  seurat_obj <- subset(seurat_obj, subset = percent.hb < 1 & percent.mt < 5)
+  
+  # Update the object in the environment
+  assign(obj_name, seurat_obj)
+}
+
+FeatureScatter(E10_seurat, feature1 = "percent.ribo", feature2 = "nFeature_RNA")
+FeatureScatter(E10_seurat, feature1 = "percent.mt", feature2 = "nFeature_RNA")
+FeatureScatter(E10_seurat, feature1 = "percent.hb", feature2 = "nFeature_RNA")
+
+set.seed(111)
+library(scDblFinder)
+
+# List of samples
+seurat_list <- list(E10 = E10_seurat, E12 = E12_seurat, E14 = E14_seurat, 
+                   E16 = E16_seurat, E18 = E18_seurat)
+
+# Process each sample
+for (sample_name in names(seurat_list)) {
+  # Get the sample object
+  sample_obj <- seurat_list[[sample_name]]
+  
+  # Convert to SingleCellExperiment
+  sce <- as.SingleCellExperiment(sample_obj, assay = "RNA")
+  
+  # Run scDblFinder
+  sce <- scDblFinder(sce)
+  
+  # Add results to Seurat object metadata
+  sample_obj$scDblFinder.class <- sce$scDblFinder.class
+  sample_obj$scDblFinder.score <- sce$scDblFinder.score
+  
+  # Update the object in the list
+  seurat_list[[sample_name]] <- sample_obj
+}
+
