@@ -158,3 +158,64 @@ for (sample_name in names(seurat_list)) {
   seurat_list[[sample_name]] <- sample_obj
 }
 
+set.seed(123)
+visualize_doublets <- function(seurat_obj, sample_name) {
+  # Quick normalization and UMAP
+  vis_obj <- NormalizeData(seurat_obj)
+  vis_obj <- FindVariableFeatures(vis_obj)
+  vis_obj <- ScaleData(vis_obj)
+  vis_obj <- RunPCA(vis_obj, npcs = 20, verbose = FALSE)
+  vis_obj <- RunUMAP(vis_obj, dims = 1:15, verbose = FALSE)
+  
+  # Add doublet info
+  vis_obj$scDblFinder.class <- seurat_obj$scDblFinder.class
+  vis_obj$scDblFinder.score <- seurat_obj$scDblFinder.score
+  
+  # Create plots
+  p1 <- DimPlot(vis_obj, group.by = "scDblFinder.class") +
+    ggtitle(paste("Doublet Classes -", sample_name))
+  
+  p2 <- FeaturePlot(vis_obj, features = "scDblFinder.score") +
+    ggtitle(paste("Doublet Scores -", sample_name))
+  
+  # Summary stats
+  stats <- table(seurat_obj$scDblFinder.class)
+  rate <- round(stats["doublet"] / sum(stats) * 100, 2)
+  
+  cat("=== ", sample_name, " ===\n")
+  cat("Singlets:", stats["singlet"], "\n")
+  cat("Doublets:", stats["doublet"], "\n")
+  cat("Doublet rate:", rate, "%\n\n")
+  
+  return(list(umap_class = p1, umap_score = p2))
+}
+
+# Apply to all samples
+plots_list <- list()
+for (sample_name in names(seurat_list_with_doublets)) {
+  plots_list[[sample_name]] <- visualize_doublets(
+    seurat_list_with_doublets[[sample_name]], 
+    sample_name
+  )
+}
+
+for (sample_name in names(plots_list)) {
+  filename <- paste0("UmapPlot_DoubletScores_", sample_name, ".png")
+  png(filename = filename, width = 1600, height = 800)  # Specify dimensions
+  print(plots_list[[sample_name]]$umap_class + plots_list[[sample_name]]$umap_score)
+  dev.off()  # Close the device to save the file
+}
+
+seurat_list_singlets <- lapply(seurat_list_with_doublets, function(sample_obj) {
+  subset(sample_obj, subset = scDblFinder.class == "singlet")
+})
+
+seurat_list <- list(E10 = E10_seurat,
+                    E12 = E12_seurat,
+                    E14 = E14_seurat,
+                    E16 = E16_seurat,
+                    E18 = E18_seurat)
+combined_seurat <- merge(x = seurat_list[[1]],
+                         y = seurat_list[2:5],
+                         add.cell.ids = c("E10", "E12", "E14", "E16", "E18"))
+
