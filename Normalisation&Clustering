@@ -1,0 +1,15 @@
+set.seed(123)
+library(Seurat)
+library(sctransform)
+obj <- SCTransform(object = combined_seurat,
+                   vars.to.regress = "percent.mt")
+obj <- RunPCA(obj)
+DimPlot(obj, reduction = "pca")
+DimHeatmap(obj, dims = 1, cells = 500, balanced = TRUE)
+DimHeatmap(obj, dims = 1:15, cells = 500, balanced = TRUE)
+ElbowPlot(obj, ndims = 50 )
+
+obj <- FindNeighbors(obj, dims = 1:20)
+obj <- FindClusters(obj, resolution = 1.4)
+obj <- RunUMAP(obj, dims = 1:20)
+DimPlot(obj, reduction = "umap")
