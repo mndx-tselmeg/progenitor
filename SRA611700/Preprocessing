@@ -1,0 +1,7 @@
+set.seed(123)
+library(Seurat)
+rownames(sm) <- sub("_[^_]+$", "", rownames(sm))
+rownames(sm) <- make.unique(rownames(sm))
+object1 <- CreateSeuratObject(counts = sm,
+                              min.cells = 3,
+                              min.features = 100)
