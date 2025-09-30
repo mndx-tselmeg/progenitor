@@ -1,0 +1,199 @@
+﻿Symbol;Class;Subclass;Markers
+NblM1;Neuroblast;Midbrain GABAergic;Tal2 Gpr137c Pnoc Cacna2d3 Clvs2 Tenm3
+NblM2;Neuroblast;Midbrain GABAergic;Tal2 Gm10605 Pnoc Otx1 Clvs2 Nav2
+NblM3;Neuroblast;Midbrain;Tal2 Fam214a Nrtn Stk33 Tmem38b Nav2
+NblM4;Neuroblast;Midbrain;Tal2 Bcas1 Ascl1 Sdk2 Tmem38b Tenm3
+NblF1;Neuroblast;Forebrain glutamatergic;Isl1 Pkib Cdh7 3632451O06Rik Cdkn1c Syt1
+NblF2;Neuroblast;Forebrain;Dlk1 Crb1 G0s2 Zc3h12c Btg2 Srrm4
+NblF3;Neuroblast;Forebrain GABAergic;Gsx1 Crb1 St18 Stk33 Pak3 Peg3
+NblF4;Neuroblast;Forebrain GABAergic;Dlx1 Smox Dlx5 Stk33 Myt1 Dclk2
+NblF5;Neuroblast;Forebrain GABAergic;Gsx1 Rgs8 D030055H07Rik Stk33 Cdkn1c Dcc
+NblF6;Neuroblast;Forebrain GABAergic;Sp9 Arid3a Dlx5 Kcnh2 Phf21b Fbrsl1
+CR1;Neuroblast;Cajal-Retzius;Mcidas 1600014C10Rik Ccno Cav2 Pidd1 Lrriq1
+CR2;Neuroblast;Cajal-Retzius;Mcidas Dmrta2os Ccno Cav2 Agbl4 Lrriq1
+CR3;Neuroblast;Cajal-Retzius;Mcidas Insm2 Ccno E2f7 Myb Stox1
+NblMN1;Neuroblast;Motor neuron;Phox2a Rpusd3 Ppp1r17 Fam163a Snx18 Gamt
+NblMN2;Neuroblast;Motor neuron;Phox2a Halr1 Nkx6-1 Kcnh2 Nhs Trim9
+NblM5;Neuroblast;Midbrain;Neurog1 Wnt10a Onecut2 Prdm12 Col16a1 Tnnt1
+NblM6;Neuroblast;Midbrain;Cck Ccdc182 Plk3 Sapcd1 A330009N23Rik Jag1
+NblM7;Neuroblast;Midbrain;Neurog1 Nhej1 Onecut2 Tmem159 Sgpp2 Tnnt1
+NblMix2;Neuroblast;Mixed region;Neurog1 Fndc3c1 Glra1 Cdc25b Spsb4 5730559C18Rik
+NblH1;Neuroblast;Hindbrain;Atoh1 Ccdc182 Wnt3a Iqck Nkd1 Gprc5b
+NblH2;Neuroblast;Hindbrain;Vsx1 Wdr66 Mybl1 Cdh20 Slc35d2 Crybg3
+NblMix3;Neuroblast;Mixed region;Vsx1 Eya2 Alpl Hspa2 C330027C09Rik Notch1
+NblH3;Neuroblast;Hindbrain;Hes2 4930557F10Rik Alpl Hspa2 Rsph1 Kif18a
+NblM7;Neuroblast;Midbrain;Dbx1 Pkib Rassf4 Sdk2 Nuak2 Dcc
+NblM8;Neuroblast;Midbrain;Helt Pkib Gadd45g Otx2 Nuak2 Dlgap5
+NblM9;Neuroblast;Midbrain;Helt Foxa2 Nkx6-1 Cdc25b Spsb4 Heg1
+NblM10;Neuroblast;Midbrain;9030622O22Rik Pik3c2b Btbd17 Sulf1 Spsb4 Heg1
+NblH4;Neuroblast;Hindbrain;Neurog1 Lsp1 Plk3 Gfra1 Numbl Cog1
+NblMix4;Neuroblast;Mixed region;Neurog1 Gm20083 Plk3 Galnt18 Phldb2 Crybg3
+NblH5;Neuroblast;Hindbrain;Neurog1 Cxcl14 Glra1 Pgpep1 Spsb4 Iqgap2
+NblH6;Neuroblast;Hindbrain;Msx3 Gm12236 Glra1 Sapcd1 Txlnb Nckap5
+NblH7;Neuroblast;Hindbrain;Ptf1a Akr1b8 Nphs1 Cdc25b Spsb4 Gprc5b
+NblH8;Neuroblast;Hindbrain;Kirrel2 Prdm13 Nphs1 Wnt5a Rgs3 Gprc5b
+NblH9;Neuroblast;Hindbrain;Msx3 Zfp37 Glra1 Miat Chrna4 Adgrg1
+NblF7;Neuroblast;Forebrain;Gm29478 Rgs13 AC154683.1 Clybl Wscd1 Dcc
+NblMix5;Neuroblast;Mixed region;Neurog2 Rgs13 Grasp Zc3h12c Nuak2 Tmem2
+NblF8;Neuroblast;Forebrain;Olig3 Brip1 Prkg2 Zc3h12c E2f1 Eml5
+NblF9;Neuroblast;Forebrain glutamatergic;Neurog1 Mamld1 Kifc1 Sapcd2 Ube2c Ccnb1
+NblF10;Neuroblast;Forebrain glutamatergic;Gmnc Dll1 Rspo3 Fam110a Hes6 Lzts1
+NblF11;Neuroblast;Forebrain glutamatergic;Neurog1 Hs3st3a1 Gadd45g Zc3h12c Btg2 Lzts1
+NblH10;Neuroblast;Hindbrain;Gata2 Insm2 Fam183b Gm4675 Rsph1 Pcdh17
+NblMix6;Neuroblast;Mixed region;3110035E14Rik 2610008E11Rik St18 Sdk2 Sdccag8 Vat1l
+NblH11;Neuroblast;Hindbrain;Vsx2 Insc Nkx6-1 Gm4675 Sox21 Rnd3
+NblMix7;Neuroblast;Mixed region glutamatergic;Sim1 S100a16 Mfng Clvs1 Cacna2d1 Serping1
+NblM11;Neuroblast;Midbrain glutamatergic;Sim1 Insm1 2700046A07Rik Clvs1 Myo16 Elavl4
+NblM12;Neuroblast;Midbrain glutamatergic;9030622O22Rik Hepacam2 Tmem163 Pxylp1 Apcdd1 Chn2
+NblH12;Neuroblast;Hindbrain;Phox2b Bcas1 Crabp1 Lmx1b Chrna4 Adgrg1
+NblH13;Neuroblast;Hindbrain;Tlx3 Nexn Crabp1 Sapcd1 Chrna4 Gamt
+NblH14;Neuroblast;Hindbrain;Otp Insc Lhx5 Gfra1 Csrp1 Serping1
+NblH15;Neuroblast;Hindbrain glycinergic;Gm20649 Qsox1 Crabp1 Hoxb2 Chrna4 Greb1l
+NblM13;Neuroblast;Midbrain;Dbx1 Grm4 Onecut2 A830018L16Rik A330009N23Rik Gamt
+NblH16;Neuroblast;Hindbrain;Atoh1 Cdkn2b Rassf4 Gm16701 1700003F12Rik Fam78b
+NblH17;Neuroblast;Hindbrain;Atoh1 Stpg1 Rassf4 Rab15 Nkd1 Mtcl1
+NblF12;Neuroblast;Forebrain;Atp8b4 Kif19a Art1 Art5 Ankrd2 Fam107a
+NblSN1;Neuroblast;Sensory neuron;Ppp1r14a Ccdc88b Six1 Bdnf A330009N23Rik Dcdc2a
+NblSN2;Neuroblast;Sensory neuron;Tlx2 Fanca Synpo Mreg Gm35696 Coro2a
+NblSN3;Neuroblast;Sensory neuron;Sct Bik Tuba4a Mreg Atp6v1c2 Egflam
+NblSN5;Neuroblast;Sensory neuron;Tlx2 D930020B18Rik Gm7271 Mreg Acad10 Serpinb8
+NblSN6;Neuroblast;Sensory neuron;Tlx2 Gm4166 Gm7271 Mreg Gm16104 Coro2a
+NblSN7;Neuroblast;Sensory neuron;Isl2 Ccer2 Synpo Mreg Cerkl Cryba1
+NblSN8;Neuroblast;Sensory neuron;Tlx2 Prox2 Gm7271 Dbh Cerkl Tspan2os
+Nbl383;Neuroblast;Hindbrain;Lhx4 St8sia3os Ppp1r17 Frmpd1 Parm1 Angpt2
+Nbl384;Neuroblast;Motor neuron;Gnat3 Insc Tbx20 Fam163a Prickle1 Mcc
+Nbl385;Neuroblast;Motor neuron;Lhx4 Sema3d Tbx20 Pnlip Arhgap36 Kcnab1
+Nbl386;Neuroblast;Midbrain glutamatergic;Cplx3 Prss12 Onecut2 Prdm12 Npr2 Gamt
+Nbl387;Neuroblast;Midbrain glutamatergic;Onecut3 E130006D01Rik Onecut2 Tppp3 Hspa12a Rem2
+Nbl388;Neuroblast;Midbrain glutamatergic;Bhlhe23 Cpne8 Onecut2 Tppp3 Esyt1 Crip1
+Nbl389;Neuroblast;Sensory neuron;Isl2 Pappa2 Ppp1r17 Scn9a S100a10 Crip1
+Nbl390;Neuroblast;Midbrain glutamatergic;Pitx2 Lypd1 Gm28526 Lef1 Bmp7 Enpp2
+Nbl391;Neuroblast;Midbrain glutamatergic;Gm26872 Shisa6 Gm28526 3632451O06Rik Dock5 Rap1gap2
+Nbl392;Neuroblast;Midbrain glutamatergic;Gm26872 Enpp3 Ppp1r17 3632451O06Rik Dock5 Rap1gap2
+Nbl393;Neuroblast;Hindbrain glutamatergic;C1ql4 Chrdl1 Evx2 Nrn1 Lrrtm3 Trp53i11
+Nbl394;Neuroblast;Hindbrain glutamatergic;Robo3 Cpsf7 Nefl Hoxb2 Rgmb Ina
+Nbl395;Neuroblast;Hindbrain glutamatergic;Evx1os Il17ra Adcyap1 Gm16701 Rgmb Fam78b
+Nbl396;Neuroblast;Hindbrain glutamatergic;Grem2 Hoxc5 Hoxb4 3632451O06Rik Hoxd3 Fam78b
+Nbl397;Neuroblast;Hindbrain glutamatergic;Phox2b 9330182L06Rik Nefm Lmx1b Slc17a6 Gcnt2
+Nbl398;Neuroblast;Hindbrain glutamatergic;Phox2b Gm49144 Nefm Lmx1b Nkain4 Rara
+Nbl399;Neuroblast;Hindbrain glutamatergic;Nrgn Tlx1 C130021I20Rik Lmx1b Peg10 Racgap1
+Nbl400;Neuroblast;Hindbrain glutamatergic;Tlx3 Gm44593 C130021I20Rik Lmx1b Cblb Garem2
+Nbl401;Neuroblast;Spinal cord glutamatergic;Hoxb6 Klhl35 Hoxb4 Lmx1b Rgmb Slc8a2
+Nbl402;Neuroblast;Hindbrain GABAergic;Robo3 Gal3st3 Gm26688 Pid1 Rgmb Fam43a
+Nbl403;Neuroblast;Hindbrain GABAergic;Tfap2a Adra1a Nkain1 Igsf8 Rgs3 Lzts1
+Nbl404;Neuroblast;Hindbrain glycinergic;Robo3 Tcf15 Hoxb4 Igsf8 Tspan18 Srrm3
+Nbl405;Neuroblast;Hindbrain glycinergic;Robo3 Sema4b Hoxb4 Mxra7 Rcan2 Rara
+Nbl406;Neuroblast;Hindbrain glycinergic;Slc6a5 Homer2 Lhx5 Scrt2 Rcan2 Slc37a1
+Nbl407;Neuroblast;Hindbrain glycinergic;Otp Klhl35 Lhx5 Gfra1 Enox2 Rnd3
+Nbl408;Neuroblast;Hindbrain glycinergic;Otp Dnajb5 Lhx1os Gfra1 Rgmb Tmem169
+Nbl409;Neuroblast;Hindbrain GABAergic;Otp 2610027F03Rik Lhx1os Syndig1 Enox2 Klhl32
+Nbl410;Neuroblast;Midbrain;Cplx3 Gm44593 Gm26688 Mab21l1 Pou3f4 Lzts1
+Nbl411;Neuroblast;Midbrain;Shox2 Crebrf Prmt8 Ebf3 2510009E07Rik Dcc
+Nbl412;Neuroblast;Midbrain glutamatergic;Shox2 Tspan11 Ebf2 Gfra1 Cdkn1c Efna5
+Nbl413;Neuroblast;Midbrain glutamatergic;Bhlhe23 Thrb Pou4f1 Cntn2 Fbxl17 F13a1
+Nbl414;Neuroblast;Midbrain glutamatergic;D130079A08Rik Abcd2 Barhl2 Mab21l1 Fzd1 Klhl13
+Nbl415;Neuroblast;Midbrain glutamatergic;Bhlhe23 Kcnip3 Onecut2 Vav3 Fzd1 Srrm3
+Nbl416;Neuroblast;Midbrain glutamatergic;Gm26872 Pax5 Barhl2 Gfra1 5930412G12Rik Parvb
+Nbl417;Neuroblast;Midbrain glutamatergic;Pou4f3 Lhx9 Pou4f1 Mab21l1 Gpr156 Igfbpl1
+Nbl418;Neuroblast;Midbrain glutamatergic;Asic2 Ypel2 Adcyap1 Cntn2 Chgb Klhl13
+Nbl419;Neuroblast;Midbrain glutamatergic;Tfap2b Sertad4 Lgals7 Mab21l1 Rtn4rl1 F13a1
+Nbl420;Neuroblast;Midbrain glutamatergic;Tfap2b Foxb1 Lgals7 Ntng2 Pcsk2 Cntnap2
+Nbl421;Neuroblast;Thalamus glutamatergic;Gbx2 Nme2 Zic5 Dmrtb1 Slc17a6 Rhou
+Nbl422;Neuroblast;Thalamus glutamatergic;Gbx2 Mapk11 Sema5a Pou2f2 Rnf220 Fam78b
+Nbl423;Neuroblast;Thalamus glutamatergic;Gbx2 Wscd2 Prkg2 Slc1a2 Slc17a6 Cep112
+Nbl424;Neuroblast;Thalamus glutamatergic;Gbx2 Map3k20 Prkg2 Rtkn2 Arhgap18 Cdo1
+Nbl425;Neuroblast;Neuronal intermediate progenitor;2600014E21Rik Lockd Palmd Zhx2 Pou3f3 Rasgef1b
+Nbl426;Neuroblast;Forebrain glutamatergic;Unc5d Gm20687 Kcnn3 Foxg1 Nrp1 Cttnbp2
+Nbl427;Neuroblast;Forebrain glutamatergic;Unc5d Focad Cdh10 Galnt17 Nrg1 Cttnbp2
+Nbl428;Neuroblast;Neuronal intermediate progenitor;Eomes Stk32a Cdh8 Plcb1 Nrg1 Carmil3
+Nbl429;Neuroblast;Forebrain glutamatergic;Gm28050 Hs3st1 Sorl1 Negr1 Tmem108 Pam
+Nbl430;Neuroblast;Neuronal intermediate progenitor;Nhlh1 Sirt5 Dubr Necab3 Prdm8 Nfia
+Nbl431;Neuroblast;Forebrain glutamatergic;Tbr1 Tbk1 Cabp1 Rnd2 Prdm8 Ccser1
+Nbl432;Neuroblast;Forebrain glutamatergic;Tiam2 Adamtsl3 Neurod6 Rnd2 Zbtb18 E330009J07Rik
+Nbl433;Neuroblast;Neuronal intermediate progenitor;Eomes Ttc39b Plcxd2 Mfap4 Sez6 Kif21b
+Nbl434;Neuroblast;Neuronal intermediate progenitor;Sstr2 A930024E05Rik Neurod6 Slc30a10 Ulk4 Carmil3
+Nbl435;Neuroblast;Forebrain glutamatergic;Sstr2 4930545L23Rik Plcxd2 Flrt1 Ttbk1 Slc44a5
+Nbl436;Neuroblast;Neuronal intermediate progenitor;Eomes Rftn2 Ust Kif26b Nrg1 Snhg18
+Nbl437;Neuroblast;Neuronal intermediate progenitor;Eomes Cdc14a Rhbdl3 Kif26b Celsr1 E330009J07Rik
+Nbl438;Neuroblast;Neuronal intermediate progenitor;Neurog2 Slc16a14 Rhbdl3 Lypd6 Celsr1 Lpar1
+Nbl439;Neuroblast;Neuronal intermediate progenitor;Neurog2 Dleu7 Rhbdl3 Tmem132b Celsr1 Fam210b
+Nbl440;Neuroblast;Neuronal intermediate progenitor;Neurog1 Lrrc1 Gadd45g Zc3h12c E2f1 Clspn
+Nbl441;Neuroblast;Neuronal intermediate progenitor;Eomes Ncapg2 Neil3 Tcf19 Hist1h2ae Esco2
+Nbl442;Neuroblast;Neuronal intermediate progenitor;Eomes Depdc1b Pif1 Mxd3 Spc25 Knl1
+Nbl443;Neuroblast;Neuronal intermediate progenitor;Eomes Hyls1 Gadd45g Troap Arhgap11a Cenpe
+Nbl444;Neuroblast;Neuronal intermediate progenitor;Eomes Fopnl Hist1h2bc Rnd2 Ube2c Cenpa
+Nbl445;Neuroblast;Neuronal intermediate progenitor;Eomes Rab39b Rwdd3 Clvs1 Rbfox3 Lzts1
+Nbl446;Neuroblast;Neuronal intermediate progenitor;Eomes Sat2 Gm11266 Mfap4 Gsap Nfia
+Nbl447;Neuroblast;Neuronal intermediate progenitor;Nhlh1 9630028B13Rik Dmrta1 Gadd45a Efna3 Pgap1
+Nbl448;Neuroblast;Undefined;Sstr2 Rbm24 Cdc25c Nfic Ttk Espl1
+Nbl449;Neuroblast;Forebrain GABAergic;Gsx2 Rgs8 Rgs16 Depdc7 Hes6 Myo10
+Nbl450;Neuroblast;Forebrain GABAergic;Gsx2 Dusp10 Ascl1 Stk33 E2f1 Ccne2
+Nbl451;Neuroblast;Forebrain GABAergic;Dlx2 E2f2 Rbm3 Uba52 Ccnd2 Slbp
+Nbl452;Neuroblast;Forebrain GABAergic;Dlx2 Rbl1 Arx Rffl Gm10282 Atad2
+Nbl453;Neuroblast;Forebrain;Gsx2 Egfr Ascl1 Lima1 Efhd2 Rnf180
+Nbl454;Neuroblast;Forebrain GABAergic;Dlx6os1 Tmem98 Arx Zswim5 Grik3 Dclk2
+Nbl455;Neuroblast;Forebrain GABAergic;Dlx6os1 Arhgef39 Dlx5 Cep55 Aspm Sgo2a
+Nbl456;Neuroblast;Forebrain GABAergic;Gsx2 Gpbp1l1 Dlx5 Stk33 Aspm Pbk
+Nbl457;Neuroblast;Forebrain GABAergic;Dlx6os1 Sall1 Dlx5 Gm13889 Ccnd2 Nusap1
+Nbl458;Neuroblast;Forebrain GABAergic;B020031H02Rik Arl4d Dlx5 Gm13889 Ccnd2 Gm14964
+Nbl459;Neuroblast;Hindbrain;Prelp Dll3 Gadd45g Sdk2 Rbfox3 Rnasel
+Nbl460;Neuroblast;Hindbrain;Msx3 Adcy2 Glra1 Pdpn Nrarp Sema5b
+Nbl461;Neuroblast;Hindbrain;Kirrel2 Sh3bp4 Nphs1 Pgpep1 Hes6 Chst15
+Nbl462;Neuroblast;Hindbrain;Ptf1a Adgrg6 Nphs1 Hhip Grid2 Meis1
+Nbl463;Neuroblast;Hindbrain;Ptf1a Ass1 Nphs1 Col28a1 Grid2 Mgst1
+Nbl464;Neuroblast;Hindbrain;Kirrel2 Ncdn Prss23 Nbl1 Wscd1 Vps37b
+Nbl465;Neuroblast;Hindbrain glycinergic;Pax2 Pde3a Slc30a3 Abat Kcnb2 Afap1
+Nbl466;Neuroblast;Hindbrain glycinergic;Pax2 Olfml2b Gm38399 Tbc1d4 Masp1 Nanos1
+Nbl467;Neuroblast;Hindbrain glycinergic;Optc Ccna1 Gm38399 Mxd3 Aspm Hmmr
+Nbl468;Neuroblast;Undefined;Kcnj6 Setd7 AC154683.1 Ryr2 Sez6l Gm20696
+Nbl469;Neuroblast;Mixed region;Hs3st5 Rprd1b AC154683.1 Pde1c Carnmt1 Nav2
+Nbl470;Neuroblast;Mixed region glutamatergic;Neurog2 Mccc2 Rhbdl3 Mdga1 Rbfox3 Nfia
+Nbl471;Neuroblast;Mixed region glutamatergic;Nhlh1 Pygo1 Reln Mdga1 Syn2 Nfia
+Nbl472;Neuroblast;Mixed region glutamatergic;Sim1 E130114P18Rik Nxph4 Zmat4 Shf Slc22a15
+Nbl473;Neuroblast;Hindbrain glutamatergic;Hoxc4 Wrnip1 Hoxb4 Tmem178 Fgf9 Ddx31
+Nbl474;Neuroblast;Hindbrain glutamatergic;Robo3 Sertm1 Hoxb3 Klhl1 Hoxd3 Elmo1
+Nbl475;Neuroblast;Hindbrain glutamatergic;Ren1 Tprn Hoxb3 Pde1c Eva1c Fam78b
+Nbl476;Neuroblast;Hindbrain glutamatergic;Atoh1 Arhgef10l Rassf4 Hsd11b2 Sema7a Fam78b
+Nbl477;Neuroblast;Hindbrain;Atoh1 Cyp11a1 Btbd11 Hsd11b2 Sema7a Fam78b
+Nbl478;Neuroblast;Hindbrain;Atoh1 Gm38534 Btbd11 Hsd11b2 Nkd1 Dbndd2
+Nbl479;Neuroblast;Hindbrain glutamatergic;Tlx3 Pmaip1 Gm12116 Tmem91 Gxylt2 Sept4
+Nbl480;Neuroblast;Hindbrain;Pcsk9 Gm26911 Ucma Mfap4 Man1c1 Gamt
+Nbl481;Neuroblast;Hindbrain;Pcsk9 Focad A930017K11Rik Pde1c Lynx1 Sept4
+Nbl482;Neuroblast;Hindbrain;Pcsk9 Tbata Ppp2r2c Cog7 Man1c1 Selenom
+Nbl483;Neuroblast;Hindbrain;Cadps2 Pgf Ppp2r2c Pdgfc Man1c1 Selenom
+Nbl484;Neuroblast;Hindbrain;Pvalb Ntf3 Gsg1l Gm5089 Kcne1l Sipa1l3
+Nbl485;Neuroblast;Hindbrain;Tlx3 Grin2c Gm12116 Sp5 Kcne1l Kcnd3
+Nbl486;Neuroblast;Hindbrain;Pvalb Fgfr4 Ucma C230057M02Rik Sema7a Sipa1l3
+Nbl487;Neuroblast;Hindbrain glutamatergic;Pcsk9 Sema3a Sv2b Mxd3 Ppm1h Sgo2a
+Nbl488;Neuroblast;Hindbrain glutamatergic;Abca4 Gm15723 Barx2 Pax6 Igsf21 Gamt
+Nbl489;Neuroblast;Hindbrain;Atoh1 Cemip Gsg1l Gm5089 Man1c1 Vat1l
+Nbl490;Neuroblast;Hindbrain glutamatergic;Mybpc1 1810041L15Rik Barx2 Gm5089 Mgarp Vat1l
+Nbl491;Neuroblast;Hindbrain glutamatergic;Nts Tph1 Barx2 Zfp804b Mgarp Slc24a3
+GblM3;Glioblast;Midbrain;Shisa3 Aldh1l1 Fgfbp3 Lxn Rassf10 Adhfe1
+GblF8;Glioblast;Forebrain;Slc14a2 Nlrx1 Cpm Creg2 Cfap100 Adhfe1
+GblF9;Glioblast;Forebrain;Slc14a2 Bdh2 Cpm Trim47 Paqr8 Shc3
+GblF10;Glioblast;Forebrain;Mlc1 Dapk2 Dkk3 Cmtm5 Pacrg Tspan15
+GblF11;Glioblast;Forebrain;Mlc1 Igsf1 Gm17455 Enkur Gm11992 Traf1
+GblF12;Glioblast;Forebrain;Clu Cln3 Dbx2 Ramp1 Slc25a18 Tmem100
+GblMix1;Glioblast;Mixed region;Aldoc N4bp2l1 Slc7a10 Gdpd2 Slc25a18 Cnp
+GblH1;Glioblast;Hindbrain;Aldoc Fam69c Fgfbp3 Emp2 Slc25a18 Paqr7
+GblH2;Glioblast;Hindbrain;Slc6a11 Rrnad1 Slc7a10 Emp2 Slc6a9 Paqr7
+GblH3;Glioblast;Hindbrain;Aqp4 Tmbim1 Ppp1r3c Ramp1 Prss35 Tmem100
+GblH4;Glioblast;Hindbrain;Nppc 1110032F04Rik Hopx Gabrb1 Grm7 Paqr7
+GblH5;Glioblast;Hindbrain;Nppc Dnah6 Angptl1 Gabrb1 Naaa Dnaaf3
+GblH6;Glioblast;Hindbrain;Nppc Cyp39a1 Nid1 Ednrb Naaa Afap1l2
+GblH7;Glioblast;Hindbrain;Pgm5 Sostdc1 Luzp2 Gabrb1 Dhrs3 Acot1
+AstroMix1;Glioblast;Mixed region astrocytes;Aqp4 Lypd1 Hopx Inpp5j Tmie Selenom
+AstroMix2;Glioblast;Mixed region astrocytes;Gfap Pla2g3 Hopx Sparcl1 Cidea Adhfe1
+AstroMix3;Glioblast;Mixed region astrocytes;Slc6a11 Mcrip2 Dbx2 Fam212b Slc6a9 Etv4
+AstroMix4;Glioblast;Mixed region astrocytes;Slc6a11 Trim62 Dbx2 Cldn10 Slc6a9 Atp1a2
+AstroMix5;Glioblast;Mixed region astrocytes;Agt Il33 Slc7a10 Cldn10 Slc6a9 Cyp2j9
+AstroH;Glioblast;Hindbrain;Pla2g7 AI464131 Adamtsl1 Cldn10 Slc6a9 Cyp2j9
+AstroSC1;Glioblast;Spinal cord;Ctnna3 Lcat Hopx Cldn10 Slc6a9 Atp1a2
+AstroSC2;Glioblast;Spinal cord;Ctnna3 Kcnmb4os2 Hopx Creg2 Kcnmb4 Adhfe1
+PreOPC1;Glioblast;PreOPC;Ntsr2 Gm29683 Dbx2 Fzd9 Mfge8 March3
+PreOPC2;Glioblast;PreOPC;Olig1 Stard9 Olig2 Crlf1 Sox8 Me3
+PreOPC3;Glioblast;PreOPC;Olig1 Gm35040 Olig2 Crlf1 Cbr3 Ttpa
+GblO1;Glioblast;Mixed region;Olig1 Cdc42ep1 Olig2 Fam212b Cbr3 Etv4
+GblO2;Glioblast;Mixed region;Timp4 Cenpi Acsbg1 Ramp1 Cbr3 Etv4
+OPC1;Glioblast;Undefined;Olig1 Caskin2 Lhfpl3 Lnx1 Dock10 Plekhb1
