@@ -7,6 +7,19 @@ This data comes from Lhx6(BAC)-GFP transgenic mouse caudal ganglionic eminence a
 This data contains 8876 barcodes and 29198 features initially. 
 # Running DecontX to detect the ambient RNA
 DecontX program was ran on raw expression matrix directly with its standard attributes.
+DecontX identified 4 distinct clusters.
 <img width="824" height="536" alt="image" src="https://github.com/user-attachments/assets/e7c3d2a6-0ae4-419a-bdfe-74d80a01c38b" />
-<img width="1570" height="1078" alt="image" src="https://github.com/user-attachments/assets/0e818314-e3fc-472e-a314-7dd9cc068df5" />
+
+Here we can see ambient RNA contamination levels of the cells on the same cluster.
+<img width="824" height="536" alt="image" src="https://github.com/user-attachments/assets/0e818314-e3fc-472e-a314-7dd9cc068df5" />
+
+# Quality checking process
+28 mitochondrial genes, 11 hemoglobin genes, and 321 ribosomal genes were detected in the sample. 
+<img width="2796" height="1068" alt="image" src="https://github.com/user-attachments/assets/dc72edb6-edd0-486e-95fc-bd96af777fe2" />
+Contamination distribution relative to the number of features are shown here. 
+
+According to literature in mouse scRNA-seq library 5% mitochondrial gene contamination threshold performs well to distinguish between healthy and low-quality cells https://pmc.ncbi.nlm.nih.gov/articles/PMC8599307/) and almost no hemoglobin gene if it is not from blood sample. So I used lower than 5% for mitochondrial gene and lower than 1% hemoglobin gene contamination as threshold for quality check. Satija Lab’s Seurat tutorials (https://satijalab.org/seurat/articles/sctransform_vignette.html) recommend regressing out ribosomal gene effects during scaling rather than discarding cells since ribosomal gene expression is genuinely high in certain physiological states (e.g. proliferating cells). Removing such cells could bias the dataset against highly active or metabolically busy cell types.
+
+After filtering according to the thresholds I'm left with 24069 features and 7951 cells. 
+
 
