@@ -1,6 +1,10 @@
 set.seed(123)
+
+library(irlba)
+library(Matrix)
 library(Seurat)
 library(celda)
+library(SingleCellExperiment)
 library(scDblFinder)
 library(decontX)
 
@@ -56,3 +60,34 @@ p1 | p2 | p3
 
 seurat_obj <- subset(seurat_obj, subset = percent.hb < 1 & percent.mt < 5)
 
+# Doublet detection
+sce <- as.SingleCellExperiment(seurat_obj, assay = "RNA")
+sce <- scDblFinder(sce)
+
+# Add doublet results to Seurat object metadata
+seurat_obj$scDblFinder.class <- sce$scDblFinder.class
+seurat_obj$scDblFinder.score <- sce$scDblFinder.score
+
+# Visualize doublets
+vis_obj <- NormalizeData(seurat_obj)
+vis_obj <- FindVariableFeatures(vis_obj)
+vis_obj <- ScaleData(vis_obj)
+vis_obj <- RunPCA(vis_obj, npcs = 20, verbose = FALSE)
+vis_obj <- RunUMAP(vis_obj, dims = 1:15, verbose = FALSE)
+
+# Add doublet info to visualization object
+vis_obj$scDblFinder.class <- seurat_obj$scDblFinder.class
+vis_obj$scDblFinder.score <- seurat_obj$scDblFinder.score
+
+# Create plots
+p1 <- DimPlot(vis_obj, group.by = "scDblFinder.class") +
+  ggtitle("Doublet Classes")
+p2 <- FeaturePlot(vis_obj, features = "scDblFinder.score") +
+  ggtitle("Doublet Scores")
+p1 | p2
+
+# Filter to keep only singlets
+seurat_obj_clean <- subset(seurat_obj, subset = scDblFinder.class == "singlet")
+
+# Save the cleaned Seurat object
+saveRDS(seurat_obj_clean, file = "decontaminated_cleaned_seurat.rds")
