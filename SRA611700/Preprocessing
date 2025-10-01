@@ -1,7 +1,58 @@
 set.seed(123)
 library(Seurat)
+library(celda)
+library(scDblFinder)
+library(decontX)
+
 rownames(sm) <- sub("_[^_]+$", "", rownames(sm))
 rownames(sm) <- make.unique(rownames(sm))
-object1 <- CreateSeuratObject(counts = sm,
-                              min.cells = 3,
-                              min.features = 100)
+
+# Create SingleCellExperiment object from matrix
+sce <- SingleCellExperiment::SingleCellExperiment(
+  assays = list(counts = sm)
+)
+
+cat("Running DecontX on your matrix...\n")
+sce_decontx <- decontX(sce)
+
+umap <- reducedDim(sce_decontx, "decontX_UMAP")
+plotDimReduceCluster(x = sce_decontx$decontX_clusters,
+    dim1 = umap[, 1], dim2 = umap[, 2])
+
+plotDecontXContamination(sce_decontx)
+
+# Create Seurat object with decontaminated counts
+decontaminated_counts <- sce_decontx@assays@data$decontXcounts
+contamination_estimates <- sce_decontx$decontX_contamination
+
+seurat_obj <- CreateSeuratObject(
+  counts = decontaminated_counts,
+  min.cells = 3,      # Minimum cells per gene
+  min.features = 200  # Minimum genes per cell
+)
+# Add contamination estimates as metadata
+seurat_obj$contamination <- contamination_estimates[colnames(seurat_obj)]
+
+# Calculate QC metrics
+rp_genes <- grep("^Rp[sl]", rownames(seurat_obj), value = TRUE, ignore.case = TRUE)
+seurat_obj[["percent.ribo"]] <- PercentageFeatureSet(seurat_obj, features = rp_genes)
+
+mt_genes <- grep("^mt-", rownames(seurat_obj), value = TRUE, ignore.case = TRUE)
+seurat_obj[["percent.mt"]] <- PercentageFeatureSet(seurat_obj, features = mt_genes)
+
+hb_genes <- grep("^Hb[ab]", rownames(seurat_obj), value = TRUE, ignore.case = TRUE)
+seurat_obj[["percent.hb"]] <- PercentageFeatureSet(seurat_obj, features = hb_genes)
+
+p1 <- FeatureScatter(seurat_obj, 
+                     feature1 = "percent.ribo", 
+                     feature2 = "nFeature_RNA") + NoLegend()
+p2 <- FeatureScatter(seurat_obj, 
+                     feature1 = "percent.mt", 
+                     feature2 = "nFeature_RNA") + NoLegend()
+p3 <- FeatureScatter(seurat_obj, 
+                     feature1 = "percent.hb", 
+                     feature2 = "nFeature_RNA") + NoLegend()
+p1 | p2 | p3
+
+seurat_obj <- subset(seurat_obj, subset = percent.hb < 1 & percent.mt < 5)
+
