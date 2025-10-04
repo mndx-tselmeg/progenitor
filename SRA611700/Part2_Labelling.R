@@ -69,8 +69,14 @@ table(obj$sctype_classification)
 
 ---
 
-# Let's try FindAllMarkers() function for labelling the clusters
+# Let's try scCATCH for labelling the clusters
+library(scCATCH)
+objj <- createscCATCH(data = obj[["SCT"]]@data, cluster = as.character(Idents(obj)))
+cellmatch_new <- cellmatch[cellmatch$species == "Mouse" & cellmatch$tissue %in% c("Brain", "Cerebellum", "Fetal brain", "Hippocampus", "Neural tube"), ]
+objj <- findmarkergene(object = obj, 
+                      if_use_custom_marker = TRUE, 
+                      marker = cellmatch_new,
+                      use_method = "2")
+objj <- findcelltype(objj)
 
-all_markers <- FindAllMarkers(obj, 
-                              test.use = "wilcox_limma",
-                              only.pos = TRUE) 
+
