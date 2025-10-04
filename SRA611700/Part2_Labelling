@@ -2,6 +2,7 @@ set.seed(123)
 library(Seurat)
 library(sctransform)
 obj <- SCTransform(object = seurat_obj_clean,
+                   vst.flavor = "v2",
                    vars.to.regress = "percent.ribo")
 
 obj <- RunPCA(obj)
@@ -18,3 +19,7 @@ DimPlot(obj, reduction = "umap")
 obj <- RunTSNE(obj, dims = 1:25, reduction = "pca")
 DimPlot(obj, reduction = "tsne", label = TRUE) 
 
+Idents(obj)="SCT_snn_res.1" 
+all_markers <- FindAllMarkers(obj, 
+                              test.use = "wilcox_limma",
+                              only.pos = TRUE) 
