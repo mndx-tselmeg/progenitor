@@ -1,0 +1,24 @@
+setwd("~/personal/15140458/project")
+
+library(biomaRt)
+
+# Read CSV 
+df <- read.csv("Mus_musculus_cell_cycle_markers.csv", stringsAsFactors = FALSE)
+
+# Connect to the mouse Ensembl database
+mart <- useMart("ensembl", dataset = "mmusculus_gene_ensembl")
+
+# Retrieve mapping from Ensembl ID to gene name
+gene_map <- getBM(attributes = c("ensembl_gene_id", "external_gene_name"),
+                  filters = "ensembl_gene_id",
+                  values = df$geneID,
+                  mart = mart)
+
+# Merge with original data
+df_annotated <- merge(df, gene_map, 
+                      by.x = "geneID", 
+                      by.y = "ensembl_gene_id", 
+                      all.x = TRUE)
+
+# View result
+head(df_annotated)
