@@ -23,5 +23,5 @@ df_annotated <- merge(df, gene_map,
 # View result
 head(df_annotated)
 
-s_genes  <- df$external_gene_name[df$phase == "S"]
-g2m_genes <- df$external_gene_name[df$phase == "G2/M"]
+s_genes  <- df_annotated$external_gene_name[df_annotated$phase == "S"]
+g2m_genes <- df_annotated$external_gene_name[df_annotated$phase == "G2/M"]
