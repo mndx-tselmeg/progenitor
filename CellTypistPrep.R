@@ -4,22 +4,25 @@ setwd("~/personal/15140458/project/Dataset1/CGE/raw_data")
 library(Matrix)
 library(readr)
 
-# Paths to your 10x files
+# Paths to 10x files
 matrix_file <- "matrix.mtx.gz"
-features_file <- "features.tsv.gz"  # or genes.tsv.gz
+features_file <- "features.tsv.gz" 
 barcodes_file <- "barcodes.tsv.gz"
 
 # Load the data
-expr_matrix <- readMM(matrix_file)            # sparse matrix
+expr_matrix <- readMM(matrix_file)            # sparse matrix (genes x cells)
 genes <- read_tsv(features_file, col_names = FALSE)
 barcodes <- read_tsv(barcodes_file, col_names = FALSE)
 
 # Assign row and column names
-rownames(expr_matrix) <- genes$X2  # gene names
+rownames(expr_matrix) <- genes$X2  # gene symbols
 colnames(expr_matrix) <- barcodes$X1  # cell barcodes
 
-# Convert sparse matrix to dense (may be large!)
-expr_dense <- as.matrix(expr_matrix)
+# Transpose to get cells as rows, genes as columns
+expr_matrix_t <- t(expr_matrix)
 
-# Write to CSV
+# Convert to dense 
+expr_dense <- as.matrix(expr_matrix_t)
+
+# Write to CSV with cell barcodes as row names
 write.csv(expr_dense, "cell_by_gene_matrix.csv", row.names = TRUE)
