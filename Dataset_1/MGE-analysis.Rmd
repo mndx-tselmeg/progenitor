@@ -13,38 +13,54 @@ library(dplyr)
 library(Seurat)
 library(patchwork)
 
-setwd("~/personal/15140458/project/Dataset3")
-counts <- read.table(
-  "GSE199352_Gene_UMI_Matrix_10x.txt",
-  header = TRUE,
-  row.names = 1,
-  sep = "\t",
-  check.names = FALSE
-)
-```
-
-```{r}
-gene_symbols <- sub(".*-", "", rownames(counts))
-counts <- rowsum(counts, group = gene_symbols)
-Dataset3 <- CreateSeuratObject(counts = counts)
+setwd("~/personal/15140458/project/Dataset1/MGE")
+MGE.data <- Read10X(data.dir = "~/personal/15140458/project/Dataset1/MGE/raw_data")
+MGE <- CreateSeuratObject(counts = MGE.data,
+                          project = "MGE_E12.5")
 ```
 
 ### Creating a csv file for CellTypist
 
 ```{r}
-counts <- t(counts)
-write.csv(counts, "GSE199352.csv", row.names = TRUE)
+setwd("~/personal/15140458/project/Dataset1/MGE/raw_data")
+
+# Load required libraries
+library(Matrix)
+library(readr)
+
+# Paths to 10x files
+matrix_file <- "matrix.mtx.gz"
+features_file <- "features.tsv.gz" 
+barcodes_file <- "barcodes.tsv.gz"
+
+# Load the data
+expr_matrix <- readMM(matrix_file)            # sparse matrix (genes x cells)
+genes <- read_tsv(features_file, col_names = FALSE)
+barcodes <- read_tsv(barcodes_file, col_names = FALSE)
+
+# Assign row and column names
+rownames(expr_matrix) <- genes$X2  # gene symbols
+colnames(expr_matrix) <- barcodes$X1  # cell barcodes
+
+# Transpose to get cells as rows, genes as columns
+expr_matrix_t <- t(expr_matrix)
+
+# Convert to dense 
+expr_dense <- as.matrix(expr_matrix_t)
+
+# Write to CSV with cell barcodes as row names
+write.csv(expr_dense, "cell_by_gene_matrix.csv", row.names = TRUE)
 ```
 
 ### Quality check metrics
 
 ```{r}
-Dataset3[["percent.mt"]] <- PercentageFeatureSet(Dataset3, pattern = "^mt-")
-Dataset3[["percent.ribo"]] <- PercentageFeatureSet(Dataset3, pattern = "^Rpl|^Rps")
-Dataset3[["percent.hb"]] <- PercentageFeatureSet(Dataset3, pattern = "^Hba|^Hbb")
+MGE[["percent.mt"]] <- PercentageFeatureSet(MGE, pattern = "^mt-")
+MGE[["percent.ribo"]] <- PercentageFeatureSet(MGE, pattern = "^Rpl|^Rps")
+MGE[["percent.hb"]] <- PercentageFeatureSet(MGE, pattern = "^Hba|^Hbb")
 
 # Gene complexity metric
-Dataset3$log10GenesPerUMI <- log10(Dataset3$nFeature_RNA) / log10(Dataset3$nCount_RNA)
+MGE$log10GenesPerUMI <- log10(MGE$nFeature_RNA) / log10(MGE$nCount_RNA)
 ```
 
 ### Quality check metrics summary
@@ -53,31 +69,31 @@ Dataset3$log10GenesPerUMI <- log10(Dataset3$nFeature_RNA) / log10(Dataset3$nCoun
 cat("\nQC Metric Distributions:\n")
 
 cat("nCount_RNA (UMI):\n")
-cat("  Median:", median(Dataset3$nCount_RNA),
-    "| Q1-Q3:", quantile(Dataset3$nCount_RNA,0.25), "-",
-    quantile(Dataset3$nCount_RNA,0.75), "\n")
+cat("  Median:", median(MGE$nCount_RNA),
+    "| Q1-Q3:", quantile(MGE$nCount_RNA,0.25), "-",
+    quantile(MGE$nCount_RNA,0.75), "\n")
 
 cat("nFeature_RNA (genes):\n")
-cat("  Median:", median(Dataset3$nFeature_RNA),
-    "| Q1-Q3:", quantile(Dataset3$nFeature_RNA,0.25), "-",
-    quantile(Dataset3$nFeature_RNA,0.75), "\n")
+cat("  Median:", median(MGE$nFeature_RNA),
+    "| Q1-Q3:", quantile(MGE$nFeature_RNA,0.25), "-",
+    quantile(MGE$nFeature_RNA,0.75), "\n")
 
 cat("percent.mt:\n")
-cat("  Median:", round(median(Dataset3$percent.mt),2), "%",
-    "| 95th percentile:", round(quantile(Dataset3$percent.mt,0.95),2), "%\n")
+cat("  Median:", round(median(MGE$percent.mt),2), "%",
+    "| 95th percentile:", round(quantile(MGE$percent.mt,0.95),2), "%\n")
 
 cat("percent.ribo:\n")
-cat("  Median:", round(median(Dataset3$percent.ribo),2), "%\n")
+cat("  Median:", round(median(MGE$percent.ribo),2), "%\n")
 
 cat("percent.hb:\n")
-cat("  Median:", round(median(Dataset3$percent.hb),2), "%\n")
+cat("  Median:", round(median(MGE$percent.hb),2), "%\n")
 ```
 
 ### Quality check violin plots
 
 ```{r}
 p_qc <- VlnPlot(
-  Dataset3,
+  MGE,
   features = c("nCount_RNA",
                "nFeature_RNA",
                "percent.mt",
@@ -86,19 +102,19 @@ p_qc <- VlnPlot(
   ncol = 5,
   pt.size = 0.1
 )
-ggsave("Dataset3_QC_plots.png", p_qc, width = 20, height = 8, dpi = 300)
+ggsave("MGE_QC_plots.png", p_qc, width = 20, height = 8, dpi = 300)
 ```
 
 ### Quality check scatter plots
 
 ```{r}
-p1 <- FeatureScatter(Dataset3, feature1="nCount_RNA", feature2="nFeature_RNA")
-p2 <- FeatureScatter(Dataset3, feature1="nCount_RNA", feature2="percent.mt")
-p3 <- FeatureScatter(Dataset3, feature1="percent.mt", feature2="percent.ribo")
+p1 <- FeatureScatter(MGE, feature1="nCount_RNA", feature2="nFeature_RNA")
+p2 <- FeatureScatter(MGE, feature1="nCount_RNA", feature2="percent.mt")
+p3 <- FeatureScatter(MGE, feature1="percent.mt", feature2="percent.ribo")
 
 p_scatter <- p1 + p2 + p3
 
-ggsave("Dataset3_QC_scatterplots.png", p_scatter, width = 24, height = 8, dpi = 300)
+ggsave("MGE_QC_scatterplots.png", p_scatter, width = 24, height = 8, dpi = 300)
 ```
 
 ### Quality check filtration
@@ -112,8 +128,8 @@ mt_thresh <- 10
 hb_thresh <- 1
 
 qc_df <- data.frame(
-  nCount_RNA = Dataset3$nCount_RNA,
-  nFeature_RNA = Dataset3$nFeature_RNA
+  nCount_RNA = MGE$nCount_RNA,
+  nFeature_RNA = MGE$nFeature_RNA
 )
 
 qc_df$pass_qc <- with(qc_df,
@@ -137,12 +153,12 @@ p4 <- ggplot(qc_df, aes(x = log10(nCount_RNA + 1), y = log10(nFeature_RNA + 1), 
   ) +
   theme_classic()
 
-ggsave("Dataset3_QC_threshold.png", p4, width = 8, height = 8, dpi = 300)
+ggsave("MGE_QC_threshold.png", p4, width = 8, height = 8, dpi = 300)
 ```
 
 ```{r}
-Dataset3 <- subset(
-  Dataset3,
+MGE <- subset(
+  MGE,
   subset =
     nCount_RNA >= ncount_min &
     nCount_RNA <= ncount_max &
@@ -152,38 +168,32 @@ Dataset3 <- subset(
     percent.hb < hb_thresh
 )
 
-cat("Cells remaining after QC:", ncol(Dataset3), "\n")
-```
-
-```{r}
-FeaturePlot(Dataset3,
-            reduction = "pca",
-            features = "percent.ribo")
+cat("Cells remaining after QC:", ncol(MGE), "\n")
 ```
 
 ### Initial normalisation steps
 
 ```{r}
-Dataset3 <- SCTransform(Dataset3,
+MGE <- SCTransform(MGE,
                    method="glmGamPoi")
 ```
 
 ```{r}
-Dataset3 <- RunPCA(Dataset3)
-PCAplot <- ElbowPlot(Dataset3)
-ggsave("Dataset3_PCAelbow.png", PCAplot, width = 8, height = 8, dpi = 300)
+MGE <- RunPCA(MGE)
+PCAplot <- ElbowPlot(MGE)
+ggsave("MGE_PCAelbow.png", PCAplot, width = 8, height = 8, dpi = 300)
 ```
 
 ```{r}
-PCAplot2 <- DimPlot(Dataset3, reduction = "pca")
-ggsave("Dataset3_PCA.png", PCAplot2, width = 8, height = 8, dpi = 300)
+PCAplot2 <- DimPlot(MGE, reduction = "pca")
+ggsave("MGE_PCA.png", PCAplot2, width = 8, height = 8, dpi = 300)
 ```
 
 ### Cell cycle scoring
 
 ```{r}
 # Score cells for cell cycle
-Dataset3 <- CellCycleScoring(Dataset3,
+MGE <- CellCycleScoring(MGE,
                            g2m.features = g2m_genes, 
                            s.features = s_genes)
 ```
@@ -191,34 +201,34 @@ Dataset3 <- CellCycleScoring(Dataset3,
 ### Inspection of cell cycle effects
 
 ```{r}
-Dataset3_cc <- RunPCA(Dataset3, features=c(s_genes,g2m_genes))
-PCAcc <- DimPlot(Dataset3_cc, reduction="pca", group.by="Phase")
-ggsave("Dataset3_PCAcc.png", PCAcc, width = 8, height = 8, dpi = 300)
+MGE_cc <- RunPCA(MGE, features=c(s_genes,g2m_genes))
+PCAcc <- DimPlot(MGE_cc, reduction="pca", group.by="Phase")
+ggsave("MGE_PCAcc.png", PCAcc, width = 8, height = 8, dpi = 300)
 ```
 
 ### Doing SCTransform again with S and G2 phase difference regression
 
 ```{r}
-Dataset3$CC.Difference <- Dataset3$S.Score - Dataset3$G2M.Score
-Dataset3 <- SCTransform(Dataset3, vars.to.regress = "CC.Difference", method="glmGamPoi")
+MGE$CC.Difference <- MGE$S.Score - MGE$G2M.Score
+MGE <- SCTransform(MGE, vars.to.regress = "CC.Difference", method="glmGamPoi")
 ```
 
 ### Checking the regression
 
 ```{r}
-Dataset3_cc2 <- RunPCA(Dataset3, features=c(s_genes,g2m_genes))
-PCAcc2 <- DimPlot(Dataset3_cc2, reduction="pca", group.by="Phase")
-ggsave("Dataset3_PCAcc2.png", PCAcc2, width = 8, height = 8, dpi = 300)
+MGE_cc2 <- RunPCA(MGE, features=c(s_genes,g2m_genes))
+PCAcc2 <- DimPlot(MGE_cc2, reduction="pca", group.by="Phase")
+ggsave("MGE_PCAcc2.png", PCAcc2, width = 8, height = 8, dpi = 300)
 ```
 
 ### Doublet detection steps
 
 ```{r}
-Dataset3 <- RunTSNE(Dataset3, dims=1:15)
+MGE <- RunTSNE(MGE, dims=1:15)
 library(DoubletFinder)
-nExp_poi <- round(0.04 * ncol(Dataset3))  # assuming 4% expected doublets
+nExp_poi <- round(0.04 * ncol(MGE))  # assuming 4% expected doublets
 # Parameter sweep to find optimal pK
-sweep.res.list <- paramSweep(Dataset3, PCs = 1:15, sct = TRUE)
+sweep.res.list <- paramSweep(MGE, PCs = 1:15, sct = TRUE)
 sweep.stats <- summarizeSweep(sweep.res.list, GT = FALSE)
 bcmvn <- find.pK(sweep.stats)
 ```
@@ -226,42 +236,42 @@ bcmvn <- find.pK(sweep.stats)
 ```{r}
 # Visualize pK metric
 pKmetric_plot <- ggplot(bcmvn, aes(x = pK, y = BCmetric)) + geom_line() + geom_point()
-ggsave("Dataset3_pK.png", pKmetric_plot, width = 20, height = 8, dpi = 300)
+ggsave("MGE_pK.png", pKmetric_plot, width = 20, height = 8, dpi = 300)
 ```
 
 ```{r}
 # Run DoubletFinder
-Dataset3 <- doubletFinder(
-  Dataset3,
+MGE <- doubletFinder(
+  MGE,
   PCs = 1:15,
   pN = 0.25,
-  pK = 0.26,     
+  pK = 0.03,     
   nExp = nExp_poi,
   sct = TRUE
 )
 ```
 
 ```{r}
-Dataset3 <- RunUMAP(Dataset3, dims = 1:15)
-DoubletPlot <- DimPlot(Dataset3, group.by = "DF.classifications_0.25_0.26_160")
-ggsave("Dataset3_doublet.png", DoubletPlot, width = 8, height = 8, dpi = 300)
+MGE <- RunUMAP(MGE, dims = 1:15)
+DoubletPlot <- DimPlot(MGE, group.by = "DF.classifications_0.25_0.03_227")
+ggsave("MGE_doublet.png", DoubletPlot, width = 8, height = 8, dpi = 300)
 ```
 
 ```{r}
-DoubletScorePlot <- FeaturePlot(Dataset3,
-                                features = "pANN_0.25_0.26_160", 
+DoubletScorePlot <- FeaturePlot(MGE,
+                                features = "pANN_0.25_0.03_227", 
                                 reduction = "umap")
-ggsave("Dataset3_doubletscore.png", DoubletScorePlot, width = 8, height = 8, dpi = 300)
+ggsave("MGE_doubletscore.png", DoubletScorePlot, width = 8, height = 8, dpi = 300)
 ```
 
 ```{r}
-df_col <- "DF.classifications_0.25_0.26_160"
-Dataset3 <- Dataset3[, Dataset3@meta.data[[df_col]] == "Singlet"]
+df_col <- "DF.classifications_0.25_0.03_227"
+MGE <- MGE[, MGE@meta.data[[df_col]] == "Singlet"]
 ```
 
 ```{r}
-Dataset3 <- FindNeighbors(Dataset3, dims = 1:15)
-Dataset3 <- FindClusters(Dataset3, 
+MGE <- FindNeighbors(MGE, dims = 1:15)
+MGE <- FindClusters(MGE, 
                     resolution = c(0.2, 0.4, 0.6, 0.8, 1, 1.2),
                     algorithm = 4,
                     random.seed = 1)
@@ -273,10 +283,10 @@ resolutions <- c(0.2, 0.4, 0.6, 0.8, 1, 1.2)
 plot_list <- lapply(resolutions, function(res) {
   
   cluster_col <- paste0("SCT_snn_res.", res)
-  n_clusters <- length(unique(Dataset3@meta.data[[cluster_col]]))
+  n_clusters <- length(unique(MGE@meta.data[[cluster_col]]))
   
   DimPlot(
-    Dataset3,
+    MGE,
     reduction = "umap",
     group.by = cluster_col,
     label = TRUE,
@@ -288,13 +298,13 @@ plot_list <- lapply(resolutions, function(res) {
 })
 
 combined_resolutions <- wrap_plots(plot_list, ncol = 3)
-ggsave("Dataset3_allcluster.png", combined_resolutions, width = 15, height = 8, dpi = 300)
+ggsave("MGE_allcluster.png", combined_resolutions, width = 15, height = 8, dpi = 300)
 ```
 
 ```{r}
 library(cluster)
 resolutions <- c(0.2, 0.4, 0.6, 0.8, 1, 1.2)
-n_cells <- ncol(Dataset3)
+n_cells <- ncol(MGE)
 max_cells_for_silhouette <- 5000
 
 if (n_cells > max_cells_for_silhouette) {
@@ -308,9 +318,9 @@ silhouette_scores <- sapply(resolutions, function(res) {
 
   cluster_col <- paste0("SCT_snn_res.", res)
 
-  clusters <- as.numeric(Dataset3@meta.data[[cluster_col]][subsample_idx])
+  clusters <- as.numeric(MGE@meta.data[[cluster_col]][subsample_idx])
 
-  coords <- Embeddings(Dataset3, reduction = "pca")[subsample_idx, ]
+  coords <- Embeddings(MGE, reduction = "pca")[subsample_idx, ]
   coords <- coords[, 1:min(30, ncol(coords))]
 
   if (length(unique(clusters)) > 1) {
@@ -325,7 +335,7 @@ resolution_comparison <- data.frame(
   resolution = resolutions,
   n_clusters = sapply(resolutions, function(res) {
     cluster_col <- paste0("SCT_snn_res.", res)
-    length(unique(Dataset3@meta.data[[cluster_col]]))
+    length(unique(MGE@meta.data[[cluster_col]]))
   }),
   silhouette_score = silhouette_scores
 )
@@ -344,70 +354,72 @@ silhouetteplot <- ggplot(resolution_comparison,
     x = "Resolution",
     y = "Mean Silhouette Score"
   )
-ggsave("Dataset3_clustersilhouette.png", silhouetteplot, width = 8, height = 8, dpi = 300)
+ggsave("MGE_clustersilhouette.png", silhouetteplot, width = 8, height = 8, dpi = 300)
 ```
 
 ```{r}
+setwd("~/personal/15140458/project/Dataset1/MGE")
 untar("predictions.tar.gz", exdir = "predictions_output")
-setwd("~/personal/15140458/project/Dataset3/predictions_output")
+list.files("predictions_output")
+setwd("~/personal/15140458/project/Dataset1/MGE/predictions_output")
 pred_labels <- read.csv("predicted_labels.csv", row.names = 1)
 prob_mat <- read.csv("probability_matrix.csv", row.names = 1)
 head(pred_labels)
 # Make sure cell names match
 head(rownames(pred_labels))
-head(colnames(Dataset3))
+head(colnames(MGE))
 ```
 
 ```{r}
-common_cells <- intersect(colnames(Dataset3), rownames(pred_labels))
-pred_labels_Dataset3 <- pred_labels[common_cells, , drop = FALSE]
-Dataset3 <- AddMetaData(Dataset3, metadata = pred_labels_Dataset3)
+common_cells <- intersect(colnames(MGE), rownames(pred_labels))
+pred_labels_MGE <- pred_labels[common_cells, , drop = FALSE]
+MGE <- AddMetaData(MGE, metadata = pred_labels_MGE)
 ```
 
 ```{r}
-Dataset3$CellTypist_broad <- trimws(sub(":.*", "", Dataset3$predicted_labels))
-Dataset3$CellTypist_specific <- Dataset3$predicted_labels
-Dataset3$CellTypist_majorbroad <- trimws(sub(":.*", "", Dataset3$majority_voting))
+MGE$CellTypist_broad <- trimws(sub(":.*", "", MGE$predicted_labels))
+MGE$CellTypist_specific <- MGE$predicted_labels
+MGE$CellTypist_majorbroad <- trimws(sub(":.*", "", MGE$majority_voting))
 ```
 
 ```{r}
-CellTypist1 <- DimPlot(Dataset3, 
+CellTypist1 <- DimPlot(MGE, 
         group.by = "CellTypist_broad")
-ggsave("Dataset3_celltypistbroad.png", CellTypist1, width = 8, height = 8, dpi = 300)
+ggsave("MGE_celltypistbroad.png", CellTypist1, width = 8, height = 8, dpi = 300)
 ```
 
 ```{r}
-CellTypist2 <- DimPlot(Dataset3, 
+CellTypist2 <- DimPlot(MGE, 
         group.by = "CellTypist_majorbroad")
-ggsave("Dataset3_celltypistmajorbroad.png", CellTypist2, width = 8, height = 8, dpi = 300)
+ggsave("MGE_celltypistmajorbroad.png", CellTypist2, width = 8, height = 8, dpi = 300)
 ```
 
 ```{r}
-UmapRes02 <- DimPlot(Dataset3,
+UmapRes02 <- DimPlot(MGE,
                      reduction = "umap",
                      group.by = "SCT_snn_res.0.2")
-ggsave("Dataset3_cluster02.png", UmapRes02, width = 8, height = 8, dpi = 300)
+ggsave("MGE_cluster02.png", UmapRes02, width = 8, height = 8, dpi = 300)
 ```
 
 ```{r}
-PhaseUmap <- DimPlot(Dataset3, 
+PhaseUmap <- DimPlot(MGE, 
                      reduction = "umap", 
                      group.by = "Phase" )
-ggsave("Dataset3_phaseumap.png", PhaseUmap, width = 8, height = 8, dpi = 300)
+ggsave("MGE_phaseumap.png", PhaseUmap, width = 8, height = 8, dpi = 300)
 ```
 
 ```{r}
-DimPlot(Dataset3, 
+DimPlot(MGE, 
         reduction = "pca", 
         split.by = "CellTypist_broad", 
-        group.by = "SCT_snn_res.0.2" )
+        group.by = "SCT_snn_res.0.8" )
 ```
 
 ### Manual cell type annotation
 
 ```{r}
 # List all genes in the dataset
-available_genes <- rownames(Dataset3)
+available_genes <- rownames(MGE)
 
 # For each category, find which genes are present
 marker_genes <- list(
@@ -426,49 +438,49 @@ lapply(marker_genes, function(genes) genes[genes %in% available_genes])
 ```{r}
 # Plot all neural progenitor genes
 genes_to_plot <- marker_genes[["neural progenitors"]]
-genes_to_plot <- genes_to_plot[genes_to_plot %in% rownames(Dataset3)]
+genes_to_plot <- genes_to_plot[genes_to_plot %in% rownames(MGE)]
 
-neuralproplot <- FeaturePlot(Dataset3, features = genes_to_plot, order = TRUE, combine = FALSE)
+neuralproplot <- FeaturePlot(MGE, features = genes_to_plot, order = TRUE, combine = FALSE)
 neuralproplot <- wrap_plots(neuralproplot, ncol = 4)
-ggsave("Dataset3_neuralprogmarker.png", neuralproplot, width = 16, height = 16, dpi = 300)
+ggsave("MGE_neuralprogmarker.png", neuralproplot, width = 16, height = 16, dpi = 300)
 
 ```
 
 ```{r}
 # Plot all radial glia genes
 genes_to_plot <- marker_genes[["radial glia"]]
-genes_to_plot <- genes_to_plot[genes_to_plot %in% rownames(Dataset3)]
+genes_to_plot <- genes_to_plot[genes_to_plot %in% rownames(MGE)]
 
-radialgliaplot <- FeaturePlot(Dataset3, features = genes_to_plot, order = TRUE, combine = FALSE)
+radialgliaplot <- FeaturePlot(MGE, features = genes_to_plot, order = TRUE, combine = FALSE)
 radialgliaplot <- wrap_plots(radialgliaplot, ncol = 4)
-ggsave("Dataset3_RGgmarker.png", radialgliaplot, width = 16, height = 10, dpi = 300)
+ggsave("MGE_RGgmarker.png", radialgliaplot, width = 16, height = 10, dpi = 300)
 
 ```
 
 ```{r}
 # Plot all glial progenitor genes
 genes_to_plot <- marker_genes[["glial progenitors"]]
-genes_to_plot <- genes_to_plot[genes_to_plot %in% rownames(Dataset3)]
+genes_to_plot <- genes_to_plot[genes_to_plot %in% rownames(MGE)]
 
-glialproplot <- FeaturePlot(Dataset3, features = genes_to_plot, order = TRUE, combine = FALSE)
+glialproplot <- FeaturePlot(MGE, features = genes_to_plot, order = TRUE, combine = FALSE)
 glialproplot <- wrap_plots(glialproplot, ncol = 4)
-ggsave("Dataset3_GPgmarker.png", glialproplot, width = 16, height = 5, dpi = 300)
+ggsave("MGE_GPgmarker.png", glialproplot, width = 16, height = 5, dpi = 300)
 ```
 
 ### Cluster labelling
 
 ```{r}
 # Set active identity to the clustering resolution of interest
-Idents(Dataset3) <- "SCT_snn_res.0.2"
+Idents(MGE) <- "SCT_snn_res.0.2"
 
 # Verify the cell type column name
-head(Dataset3$CellTypist_broad)
+head(MGE$CellTypist_broad)
 ```
 
 ```{r}
-p5 <- DimPlot(Dataset3, reduction = "umap", label = TRUE, repel = TRUE) + 
+p5 <- DimPlot(MGE, reduction = "umap", label = TRUE, repel = TRUE) + 
         ggtitle("Clusters (res 0.8)") + NoLegend()
-p6 <- DimPlot(Dataset3, reduction = "umap", group.by = "CellTypist_majorbroad", 
+p6 <- DimPlot(MGE, reduction = "umap", group.by = "CellTypist_majorbroad", 
               label = TRUE, repel = TRUE) + 
         ggtitle("CellTypist labels") + NoLegend()
 
@@ -477,7 +489,7 @@ p5 + p6
 
 ```{r}
 # Table of counts
-conf_matrix <- table(Dataset3$SCT_snn_res.1.2, Dataset3$CellTypist_majorbroad)
+conf_matrix <- table(MGE$SCT_snn_res.0.2, MGE$CellTypist_broad)
 print(conf_matrix)
 
 # Convert to proportions (row-wise: for each cluster, fraction of cells in each cell type)
@@ -490,7 +502,7 @@ celltypeheatmap <- pheatmap(prop_matrix,
          cluster_rows = FALSE, cluster_cols = FALSE,
          display_numbers = TRUE, 
          main = "Cluster vs CellTypist label (proportion)")
-ggsave("Dataset3_celltypeheatmap.png", celltypeheatmap, width = 6, height = 5, dpi = 300)
+ggsave("MGE_celltypeheatmap.png", celltypeheatmap, width = 6, height = 5, dpi = 300)
 ```
 
 ```{r}
@@ -505,5 +517,5 @@ ggplot(conf_df, aes(x = Cluster, y = Count, fill = CellType)) +
 ```
 
 ```{r}
-saveRDS(Dataset3, file = "Dataset3_E12.5_seurat_object.rds")
+saveRDS(MGE, file = "MGE_E12.5_seurat_object.rds")
 ```
