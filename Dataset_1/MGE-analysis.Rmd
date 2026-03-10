@@ -1,0 +1,521 @@
+---
+title: "Untitled"
+author: "Mandakh Tselmeg"
+date: "2026-02-26"
+output: html_document
+---
+
+### Load the data in the environment
+
+```{r}
+set.seed(123)
+library(dplyr)
+library(Seurat)
+library(patchwork)
+
+setwd("~/personal/15140458/project/Dataset1/MGE")
+MGE.data <- Read10X(data.dir = "~/personal/15140458/project/Dataset1/MGE/raw_data")
+MGE <- CreateSeuratObject(counts = MGE.data,
+                          project = "MGE_E12.5")
+```
+
+### Creating a csv file for CellTypist
+
+```{r}
+setwd("~/personal/15140458/project/Dataset1/MGE/raw_data")
+
+# Load required libraries
+library(Matrix)
+library(readr)
+
+# Paths to 10x files
+matrix_file <- "matrix.mtx.gz"
+features_file <- "features.tsv.gz" 
+barcodes_file <- "barcodes.tsv.gz"
+
+# Load the data
+expr_matrix <- readMM(matrix_file)            # sparse matrix (genes x cells)
+genes <- read_tsv(features_file, col_names = FALSE)
+barcodes <- read_tsv(barcodes_file, col_names = FALSE)
+
+# Assign row and column names
+rownames(expr_matrix) <- genes$X2  # gene symbols
+colnames(expr_matrix) <- barcodes$X1  # cell barcodes
+
+# Transpose to get cells as rows, genes as columns
+expr_matrix_t <- t(expr_matrix)
+
+# Convert to dense 
+expr_dense <- as.matrix(expr_matrix_t)
+
+# Write to CSV with cell barcodes as row names
+write.csv(expr_dense, "cell_by_gene_matrix.csv", row.names = TRUE)
+```
+
+### Quality check metrics
+
+```{r}
+MGE[["percent.mt"]] <- PercentageFeatureSet(MGE, pattern = "^mt-")
+MGE[["percent.ribo"]] <- PercentageFeatureSet(MGE, pattern = "^Rpl|^Rps")
+MGE[["percent.hb"]] <- PercentageFeatureSet(MGE, pattern = "^Hba|^Hbb")
+
+# Gene complexity metric
+MGE$log10GenesPerUMI <- log10(MGE$nFeature_RNA) / log10(MGE$nCount_RNA)
+```
+
+### Quality check metrics summary
+
+```{r}
+cat("\nQC Metric Distributions:\n")
+
+cat("nCount_RNA (UMI):\n")
+cat("  Median:", median(MGE$nCount_RNA),
+    "| Q1-Q3:", quantile(MGE$nCount_RNA,0.25), "-",
+    quantile(MGE$nCount_RNA,0.75), "\n")
+
+cat("nFeature_RNA (genes):\n")
+cat("  Median:", median(MGE$nFeature_RNA),
+    "| Q1-Q3:", quantile(MGE$nFeature_RNA,0.25), "-",
+    quantile(MGE$nFeature_RNA,0.75), "\n")
+
+cat("percent.mt:\n")
+cat("  Median:", round(median(MGE$percent.mt),2), "%",
+    "| 95th percentile:", round(quantile(MGE$percent.mt,0.95),2), "%\n")
+
+cat("percent.ribo:\n")
+cat("  Median:", round(median(MGE$percent.ribo),2), "%\n")
+
+cat("percent.hb:\n")
+cat("  Median:", round(median(MGE$percent.hb),2), "%\n")
+```
+
+### Quality check violin plots
+
+```{r}
+p_qc <- VlnPlot(
+  MGE,
+  features = c("nCount_RNA",
+               "nFeature_RNA",
+               "percent.mt",
+               "percent.ribo",
+               "percent.hb"),
+  ncol = 5,
+  pt.size = 0.1
+)
+ggsave("MGE_QC_plots.png", p_qc, width = 20, height = 8, dpi = 300)
+```
+
+### Quality check scatter plots
+
+```{r}
+p1 <- FeatureScatter(MGE, feature1="nCount_RNA", feature2="nFeature_RNA")
+p2 <- FeatureScatter(MGE, feature1="nCount_RNA", feature2="percent.mt")
+p3 <- FeatureScatter(MGE, feature1="percent.mt", feature2="percent.ribo")
+
+p_scatter <- p1 + p2 + p3
+
+ggsave("MGE_QC_scatterplots.png", p_scatter, width = 24, height = 8, dpi = 300)
+```
+
+### Quality check filtration
+
+```{r}
+nfeature_min <- 300
+nfeature_max <- 6000
+ncount_min <- 1000
+ncount_max <- 30000
+mt_thresh <- 10
+hb_thresh <- 1
+
+qc_df <- data.frame(
+  nCount_RNA = MGE$nCount_RNA,
+  nFeature_RNA = MGE$nFeature_RNA
+)
+
+qc_df$pass_qc <- with(qc_df,
+  nCount_RNA >= ncount_min &
+  nCount_RNA <= ncount_max &
+  nFeature_RNA >= nfeature_min &
+  nFeature_RNA <= nfeature_max
+)
+
+p4 <- ggplot(qc_df, aes(x = log10(nCount_RNA + 1), y = log10(nFeature_RNA + 1), color = pass_qc)) +
+  geom_point(alpha = 0.5, size = 1) +
+  geom_vline(xintercept = log10(c(ncount_min, ncount_max)), linetype = "dashed", color = "red") +
+  geom_hline(yintercept = log10(c(nfeature_min, nfeature_max)), linetype = "dashed", color = "red") +
+  scale_color_manual(values = c("TRUE" = "#06D6A0", "FALSE" = "#EF476F")) +
+  labs(
+    title = "Cell Filtering Thresholds",
+    subtitle = paste0(sum(qc_df$pass_qc), " cells pass QC (", round(sum(qc_df$pass_qc)/nrow(qc_df)*100, 1), "%)"),
+    x = "log10(UMI + 1)",
+    y = "log10(Genes + 1)",
+    color = "Pass QC"
+  ) +
+  theme_classic()
+
+ggsave("MGE_QC_threshold.png", p4, width = 8, height = 8, dpi = 300)
+```
+
+```{r}
+MGE <- subset(
+  MGE,
+  subset =
+    nCount_RNA >= ncount_min &
+    nCount_RNA <= ncount_max &
+    nFeature_RNA >= nfeature_min &
+    nFeature_RNA <= nfeature_max &
+    percent.mt < mt_thresh &
+    percent.hb < hb_thresh
+)
+
+cat("Cells remaining after QC:", ncol(MGE), "\n")
+```
+
+### Initial normalisation steps
+
+```{r}
+MGE <- SCTransform(MGE,
+                   method="glmGamPoi")
+```
+
+```{r}
+MGE <- RunPCA(MGE)
+PCAplot <- ElbowPlot(MGE)
+ggsave("MGE_PCAelbow.png", PCAplot, width = 8, height = 8, dpi = 300)
+```
+
+```{r}
+PCAplot2 <- DimPlot(MGE, reduction = "pca")
+ggsave("MGE_PCA.png", PCAplot2, width = 8, height = 8, dpi = 300)
+```
+
+### Cell cycle scoring
+
+```{r}
+# Score cells for cell cycle
+MGE <- CellCycleScoring(MGE,
+                           g2m.features = g2m_genes, 
+                           s.features = s_genes)
+```
+
+### Inspection of cell cycle effects
+
+```{r}
+MGE_cc <- RunPCA(MGE, features=c(s_genes,g2m_genes))
+PCAcc <- DimPlot(MGE_cc, reduction="pca", group.by="Phase")
+ggsave("MGE_PCAcc.png", PCAcc, width = 8, height = 8, dpi = 300)
+```
+
+### Doing SCTransform again with S and G2 phase difference regression
+
+```{r}
+MGE$CC.Difference <- MGE$S.Score - MGE$G2M.Score
+MGE <- SCTransform(MGE, vars.to.regress = "CC.Difference", method="glmGamPoi")
+```
+
+### Checking the regression
+
+```{r}
+MGE_cc2 <- RunPCA(MGE, features=c(s_genes,g2m_genes))
+PCAcc2 <- DimPlot(MGE_cc2, reduction="pca", group.by="Phase")
+ggsave("MGE_PCAcc2.png", PCAcc2, width = 8, height = 8, dpi = 300)
+```
+
+### Doublet detection steps
+
+```{r}
+MGE <- RunTSNE(MGE, dims=1:15)
+library(DoubletFinder)
+nExp_poi <- round(0.04 * ncol(MGE))  # assuming 4% expected doublets
+# Parameter sweep to find optimal pK
+sweep.res.list <- paramSweep(MGE, PCs = 1:15, sct = TRUE)
+sweep.stats <- summarizeSweep(sweep.res.list, GT = FALSE)
+bcmvn <- find.pK(sweep.stats)
+```
+
+```{r}
+# Visualize pK metric
+pKmetric_plot <- ggplot(bcmvn, aes(x = pK, y = BCmetric)) + geom_line() + geom_point()
+ggsave("MGE_pK.png", pKmetric_plot, width = 20, height = 8, dpi = 300)
+```
+
+```{r}
+# Run DoubletFinder
+MGE <- doubletFinder(
+  MGE,
+  PCs = 1:15,
+  pN = 0.25,
+  pK = 0.03,     
+  nExp = nExp_poi,
+  sct = TRUE
+)
+```
+
+```{r}
+MGE <- RunUMAP(MGE, dims = 1:15)
+DoubletPlot <- DimPlot(MGE, group.by = "DF.classifications_0.25_0.03_227")
+ggsave("MGE_doublet.png", DoubletPlot, width = 8, height = 8, dpi = 300)
+```
+
+```{r}
+DoubletScorePlot <- FeaturePlot(MGE,
+                                features = "pANN_0.25_0.03_227", 
+                                reduction = "umap")
+ggsave("MGE_doubletscore.png", DoubletScorePlot, width = 8, height = 8, dpi = 300)
+```
+
+```{r}
+df_col <- "DF.classifications_0.25_0.03_227"
+MGE <- MGE[, MGE@meta.data[[df_col]] == "Singlet"]
+```
+
+```{r}
+MGE <- FindNeighbors(MGE, dims = 1:15)
+MGE <- FindClusters(MGE, 
+                    resolution = c(0.2, 0.4, 0.6, 0.8, 1, 1.2),
+                    algorithm = 4,
+                    random.seed = 1)
+```
+
+```{r}
+resolutions <- c(0.2, 0.4, 0.6, 0.8, 1, 1.2)
+
+plot_list <- lapply(resolutions, function(res) {
+  
+  cluster_col <- paste0("SCT_snn_res.", res)
+  n_clusters <- length(unique(MGE@meta.data[[cluster_col]]))
+  
+  DimPlot(
+    MGE,
+    reduction = "umap",
+    group.by = cluster_col,
+    label = TRUE,
+    label.size = 4,
+    pt.size = 0.3
+  ) +
+    ggtitle(paste0("Resolution ", res, " (", n_clusters, " clusters)")) +
+    NoLegend()
+})
+
+combined_resolutions <- wrap_plots(plot_list, ncol = 3)
+ggsave("MGE_allcluster.png", combined_resolutions, width = 15, height = 8, dpi = 300)
+```
+
+```{r}
+library(cluster)
+resolutions <- c(0.2, 0.4, 0.6, 0.8, 1, 1.2)
+n_cells <- ncol(MGE)
+max_cells_for_silhouette <- 5000
+
+if (n_cells > max_cells_for_silhouette) {
+  set.seed(42)
+  subsample_idx <- sample(1:n_cells, max_cells_for_silhouette)
+} else {
+  subsample_idx <- 1:n_cells
+}
+
+silhouette_scores <- sapply(resolutions, function(res) {
+
+  cluster_col <- paste0("SCT_snn_res.", res)
+
+  clusters <- as.numeric(MGE@meta.data[[cluster_col]][subsample_idx])
+
+  coords <- Embeddings(MGE, reduction = "pca")[subsample_idx, ]
+  coords <- coords[, 1:min(30, ncol(coords))]
+
+  if (length(unique(clusters)) > 1) {
+    dist_matrix <- dist(coords)
+    sil <- silhouette(clusters, dist_matrix)
+    mean(sil[, 3])
+  } else {
+    NA
+  }
+})
+resolution_comparison <- data.frame(
+  resolution = resolutions,
+  n_clusters = sapply(resolutions, function(res) {
+    cluster_col <- paste0("SCT_snn_res.", res)
+    length(unique(MGE@meta.data[[cluster_col]]))
+  }),
+  silhouette_score = silhouette_scores
+)
+
+print(resolution_comparison)
+```
+
+```{r}
+silhouetteplot <- ggplot(resolution_comparison,
+       aes(x = resolution, y = silhouette_score)) +
+  geom_line() +
+  geom_point(size = 3) +
+  theme_minimal() +
+  labs(
+    title = "Silhouette Score vs Clustering Resolution",
+    x = "Resolution",
+    y = "Mean Silhouette Score"
+  )
+ggsave("MGE_clustersilhouette.png", silhouetteplot, width = 8, height = 8, dpi = 300)
+```
+
+```{r}
+setwd("~/personal/15140458/project/Dataset1/MGE")
+untar("predictions.tar.gz", exdir = "predictions_output")
+list.files("predictions_output")
+setwd("~/personal/15140458/project/Dataset1/MGE/predictions_output")
+pred_labels <- read.csv("predicted_labels.csv", row.names = 1)
+prob_mat <- read.csv("probability_matrix.csv", row.names = 1)
+head(pred_labels)
+# Make sure cell names match
+head(rownames(pred_labels))
+head(colnames(MGE))
+```
+
+```{r}
+common_cells <- intersect(colnames(MGE), rownames(pred_labels))
+pred_labels_MGE <- pred_labels[common_cells, , drop = FALSE]
+MGE <- AddMetaData(MGE, metadata = pred_labels_MGE)
+```
+
+```{r}
+MGE$CellTypist_broad <- trimws(sub(":.*", "", MGE$predicted_labels))
+MGE$CellTypist_specific <- MGE$predicted_labels
+MGE$CellTypist_majorbroad <- trimws(sub(":.*", "", MGE$majority_voting))
+```
+
+```{r}
+CellTypist1 <- DimPlot(MGE, 
+        group.by = "CellTypist_broad")
+ggsave("MGE_celltypistbroad.png", CellTypist1, width = 8, height = 8, dpi = 300)
+```
+
+```{r}
+CellTypist2 <- DimPlot(MGE, 
+        group.by = "CellTypist_majorbroad")
+ggsave("MGE_celltypistmajorbroad.png", CellTypist2, width = 8, height = 8, dpi = 300)
+```
+
+```{r}
+UmapRes02 <- DimPlot(MGE,
+                     reduction = "umap",
+                     group.by = "SCT_snn_res.0.2")
+ggsave("MGE_cluster02.png", UmapRes02, width = 8, height = 8, dpi = 300)
+```
+
+```{r}
+PhaseUmap <- DimPlot(MGE, 
+                     reduction = "umap", 
+                     group.by = "Phase" )
+ggsave("MGE_phaseumap.png", PhaseUmap, width = 8, height = 8, dpi = 300)
+```
+
+```{r}
+DimPlot(MGE, 
+        reduction = "pca", 
+        split.by = "CellTypist_broad", 
+        group.by = "SCT_snn_res.0.8" )
+```
+
+### Manual cell type annotation
+
+```{r}
+# List all genes in the dataset
+available_genes <- rownames(MGE)
+
+# For each category, find which genes are present
+marker_genes <- list(
+  "neural progenitors" = c("Prom1", "Pax6", "Sox1", "Fezf2", "Hes1", "Hes5", "Nes", "Ascl1", "Dll1", "Dll3", "Eomes", "Sox3", "Neurog2", "Emx2", "Elavl4", "Neurod1", "Dbi", "Dach1"),
+  "radial glia" = c("Fabp7", "Slc1a3", "Aqp4", "Hopx", "Mki67", "Gli3", "Creb5"),
+  "neural stem cells" = c("Prom1", "Pax6", "Cdh2", "Thy1", "Kit", "Epcam", "Sox2", "Nes", "Vim", "Hes1", "Notch1", "Zbtb16", "Gli1", "Gli3", "Lifr"),
+  "glial cells" = c("Gfap", "Aldh1l1", "S100b", "Aqp4", "Mpb", "Plp1", "Sox10", "Cx3cr1", "Tmem119", "P2ry12", "Ptprc"),
+  "glial progenitors" = c("Olig1", "Olig2", "Pdgfra", "Cspg4"),
+  "mature neurons" = c("Sox5", "Tbr1", "Rbfox3", "Syt1", "Snap25", "Slc17a7", "Gad1", "Gad2", "Reln")
+)
+
+# Check presence
+lapply(marker_genes, function(genes) genes[genes %in% available_genes])
+```
+
+```{r}
+# Plot all neural progenitor genes
+genes_to_plot <- marker_genes[["neural progenitors"]]
+genes_to_plot <- genes_to_plot[genes_to_plot %in% rownames(MGE)]
+
+neuralproplot <- FeaturePlot(MGE, features = genes_to_plot, order = TRUE, combine = FALSE)
+neuralproplot <- wrap_plots(neuralproplot, ncol = 4)
+ggsave("MGE_neuralprogmarker.png", neuralproplot, width = 16, height = 16, dpi = 300)
+
+```
+
+```{r}
+# Plot all radial glia genes
+genes_to_plot <- marker_genes[["radial glia"]]
+genes_to_plot <- genes_to_plot[genes_to_plot %in% rownames(MGE)]
+
+radialgliaplot <- FeaturePlot(MGE, features = genes_to_plot, order = TRUE, combine = FALSE)
+radialgliaplot <- wrap_plots(radialgliaplot, ncol = 4)
+ggsave("MGE_RGgmarker.png", radialgliaplot, width = 16, height = 10, dpi = 300)
+
+```
+
+```{r}
+# Plot all glial progenitor genes
+genes_to_plot <- marker_genes[["glial progenitors"]]
+genes_to_plot <- genes_to_plot[genes_to_plot %in% rownames(MGE)]
+
+glialproplot <- FeaturePlot(MGE, features = genes_to_plot, order = TRUE, combine = FALSE)
+glialproplot <- wrap_plots(glialproplot, ncol = 4)
+ggsave("MGE_GPgmarker.png", glialproplot, width = 16, height = 5, dpi = 300)
+```
+
+### Cluster labelling
+
+```{r}
+# Set active identity to the clustering resolution of interest
+Idents(MGE) <- "SCT_snn_res.0.2"
+
+# Verify the cell type column name
+head(MGE$CellTypist_broad)
+```
+
+```{r}
+p5 <- DimPlot(MGE, reduction = "umap", label = TRUE, repel = TRUE) + 
+        ggtitle("Clusters (res 0.8)") + NoLegend()
+p6 <- DimPlot(MGE, reduction = "umap", group.by = "CellTypist_majorbroad", 
+              label = TRUE, repel = TRUE) + 
+        ggtitle("CellTypist labels") + NoLegend()
+
+p5 + p6
+```
+
+```{r}
+# Table of counts
+conf_matrix <- table(MGE$SCT_snn_res.0.2, MGE$CellTypist_broad)
+print(conf_matrix)
+
+# Convert to proportions (row-wise: for each cluster, fraction of cells in each cell type)
+prop_matrix <- prop.table(conf_matrix, margin = 1)  # margin=1 normalizes by row (cluster)
+```
+
+```{r}
+library(pheatmap)
+celltypeheatmap <- pheatmap(prop_matrix, 
+         cluster_rows = FALSE, cluster_cols = FALSE,
+         display_numbers = TRUE, 
+         main = "Cluster vs CellTypist label (proportion)")
+ggsave("MGE_celltypeheatmap.png", celltypeheatmap, width = 6, height = 5, dpi = 300)
+```
+
+```{r}
+# Convert table to data frame for ggplot2
+conf_df <- as.data.frame(conf_matrix)
+colnames(conf_df) <- c("Cluster", "CellType", "Count")
+
+ggplot(conf_df, aes(x = Cluster, y = Count, fill = CellType)) +
+  geom_bar(stat = "identity", position = "fill") +   # "fill" gives proportions
+  labs(y = "Proportion", title = "Cell type composition by cluster") +
+  theme_minimal()
+```
+
+```{r}
+saveRDS(MGE, file = "MGE_E12.5_seurat_object.rds")
+```
