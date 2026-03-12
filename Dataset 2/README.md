@@ -44,7 +44,7 @@ The fact that data has been filtered can also be seen from the scatterplots. Ano
 
 ### Checking for empty droplets
 
-<img width="2400" height="2400" alt="image" src="https://github.com/user-attachments/assets/e82e299f-f629-48ba-b459-2bb5b6ee3107" />
+<img width="800" height="800" alt="image" src="https://github.com/user-attachments/assets/e82e299f-f629-48ba-b459-2bb5b6ee3107" />
 
 It looks like there is no infliction point in UMI counts and there is a sharp drop in UMI counts vs. barcode rank in this dataset. It means that empty droplets have already been removed.
 
