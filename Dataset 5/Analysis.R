@@ -1,3 +1,5 @@
+set.seed(111)
+
 # Loading necessary packages
 
 library(dplyr)
@@ -277,12 +279,16 @@ dbl1 <- obj1$DF.classifications_0.25_0.04_48
 dbl2 <- obj2$DF.classifications_0.25_0.14_110
 dbl3 <- obj3$DF.classifications_0.25_0.27_194
 dbl4 <- obj4$DF.classifications_0.25_0.2_42
+obj1$doublet_status <- dbl1
+obj2$doublet_status <- dbl2
+obj3$doublet_status <- dbl3
+obj4$doublet_status <- dbl4
 
-doublet_labels <- c(dbl1, dbl2, dbl3, dbl4)
-dataset5$doublet_status <- doublet_labels[colnames(dataset5)]
-
-df_col <- "doublet_status"
-dataset5 <- dataset5[, dataset5@meta.data[[df_col]] == "Singlet"] ## Keeping only singlets
+dataset5 <- merge(obj1,
+                  y = c(obj2, obj3, obj4),
+                  )
+dataset5 <- subset(dataset5, subset = doublet_status == "Singlet")
+dataset5 <- JoinLayers(dataset5, assay = "RNA")
 
 # Initial normalisation 
 
@@ -303,6 +309,10 @@ ggsave("dataset5_PCA.png", PCAplot2, width = 8, height = 8, dpi = 300)
 # UMAP
 
 dataset5 <- RunUMAP(dataset5, dims = 1:20)
+
+# Check for batch effects
+batch_effect <- DimPlot(dataset5, reduction = "umap", group.by = "orig.ident")
+ggsave("dataset5_batch.png", batch_effect, width = 8, height = 8, dpi = 300)
 
 # Cell cycle scoring
 
@@ -467,7 +477,7 @@ ggsave("Dataset5_MNgmarker.png", neuronplot, width = 15, height = 5, dpi = 300)
 
 Idents(dataset5) <- "SCT_snn_res.0.4"
 p5 <- DimPlot(dataset5, reduction = "umap", label = TRUE, repel = TRUE) + 
-        ggtitle("Clusters (res 0.8)") + NoLegend()
+        ggtitle("Clusters (res 0.4)") + NoLegend()
 p6 <- DimPlot(dataset5, reduction = "umap", group.by = "CellTypist_majorbroad", 
               label = TRUE, repel = TRUE) + 
         ggtitle("CellTypist labels") + NoLegend()
@@ -518,4 +528,3 @@ progenitor_markers <- FindMarkers(
   min.pct = 0.25,        # gene must be expressed in 25% of either group
   logfc.threshold = 0.25 # minimum log2FC to test
 )
-       
